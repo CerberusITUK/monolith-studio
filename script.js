@@ -849,7 +849,14 @@
     if (t) {
       e.preventDefault();
       closeMenu();
-      goTo(parseInt(t.dataset.go, 10));
+      var goVal = t.dataset.go;
+      var goIdx = parseInt(goVal, 10);
+      if (isNaN(goIdx)) {
+        for (var gi = 0; gi < N; gi++) {
+          if (slides[gi].id === goVal) { goIdx = gi; break; }
+        }
+      }
+      if (!isNaN(goIdx)) goTo(goIdx);
     }
     // Click on overlay toggles iframe scrolling (don't navigate)
     const overlay = e.target.closest(".project-preview-overlay");
