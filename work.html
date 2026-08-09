@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Work — MONOLITH</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=36" />
+</head>
+<body class="subpage">
+
+<div class="subpage-bg"></div>
+<div class="grain" aria-hidden="true"></div>
+
+<header class="nav">
+  <a href="index.html" class="logo">
+    <span class="logo-mark">◆</span>
+    <span>MONOLITH</span>
+  </a>
+  <div class="nav-links">
+    <a href="work.html">Work</a>
+    <a href="studio.html">Studio</a>
+    <a href="index.html#4">Contact</a>
+    <a href="index.html" class="nav-back"><span>←</span> Home</a>
+  </div>
+</header>
+
+<main>
+  <section class="subpage-hero">
+    <div class="hero-canvas"></div>
+    <p class="subpage-eyebrow sr">Archive · 2017–2025</p>
+    <h1 class="subpage-title sr">Selected<br/>Work</h1>
+    <p class="subpage-subtitle sr">Six worlds we built from scratch — across film, identity, motion, and interactive. Click any project to dive in.</p>
+  </section>
+
+  <section class="work-grid">
+    <a class="work-item sr" href="project.html?id=lumen" data-project="lumen">
+      <div class="work-thumb" data-thumb="sun">
+        <span class="work-thumb-glyph">◐</span>
+      </div>
+      <div class="work-item-meta">
+        <h3>Lumen</h3>
+        <p>Brand Film · 2025</p>
+        <div class="work-tags">
+          <span class="work-tag">Film</span>
+          <span class="work-tag">3D</span>
+          <span class="work-tag">Clean Energy</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="work-item sr" href="project.html?id=strata" data-project="strata">
+      <div class="work-thumb" data-thumb="cloud">
+        <span class="work-thumb-glyph">✺</span>
+      </div>
+      <div class="work-item-meta">
+        <h3>Strata</h3>
+        <p>Brand Identity · 2025</p>
+        <div class="work-tags">
+          <span class="work-tag">Identity</span>
+          <span class="work-tag">Generative</span>
+          <span class="work-tag">Fintech</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="work-item sr" href="project.html?id=wavelength" data-project="wavelength">
+      <div class="work-thumb" data-thumb="wave">
+        <span class="work-thumb-glyph">∿</span>
+      </div>
+      <div class="work-item-meta">
+        <h3>Wavelength</h3>
+        <p>Interactive Web · 2024</p>
+        <div class="work-tags">
+          <span class="work-tag">WebGL</span>
+          <span class="work-tag">Audio</span>
+          <span class="work-tag">Music</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="work-item sr" href="project.html?id=latitude" data-project="latitude">
+      <div class="work-thumb" data-thumb="paths">
+        <span class="work-thumb-glyph">⟿</span>
+      </div>
+      <div class="work-item-meta">
+        <h3>Latitude</h3>
+        <p>Motion System · 2024</p>
+        <div class="work-tags">
+          <span class="work-tag">Motion</span>
+          <span class="work-tag">System</span>
+          <span class="work-tag">Travel</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="work-item sr" href="project.html?id=threadwork" data-project="threadwork">
+      <div class="work-thumb" data-thumb="threads">
+        <span class="work-thumb-glyph">╳</span>
+      </div>
+      <div class="work-item-meta">
+        <h3>Threadwork</h3>
+        <p>Fashion Film · 2023</p>
+        <div class="work-tags">
+          <span class="work-tag">Film</span>
+          <span class="work-tag">Identity</span>
+          <span class="work-tag">Fashion</span>
+        </div>
+      </div>
+    </a>
+
+    <a class="work-item sr" href="project.html?id=pulse" data-project="pulse">
+      <div class="work-thumb" data-thumb="pulse">
+        <span class="work-thumb-glyph">⬢</span>
+      </div>
+      <div class="work-item-meta">
+        <h3>Pulse</h3>
+        <p>Product Film · 2023</p>
+        <div class="work-tags">
+          <span class="work-tag">Film</span>
+          <span class="work-tag">Product</span>
+          <span class="work-tag">Luxury</span>
+        </div>
+      </div>
+    </a>
+  </section>
+</main>
+
+<footer class="footer">
+  <span>© 2026 Monolith Studio</span>
+  <span>studio@monolith.creative</span>
+</footer>
+
+<script src="project.js"></script>
+<script>
+// Reveal animations
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
+}, { threshold: 0.15 });
+document.querySelectorAll(".sr").forEach(el => io.observe(el));
+
+// Hover-to-preview: inject iframe only on hover, remove on leave
+document.querySelectorAll(".work-item[data-project]").forEach(item => {
+  let iframe = null;
+  item.addEventListener("mouseenter", () => {
+    if (!iframe) {
+      iframe = document.createElement("iframe");
+      iframe.className = "thumb-iframe";
+      iframe.src = item.getAttribute("href");
+      iframe.tabIndex = -1;
+      item.querySelector(".work-thumb").appendChild(iframe);
+    }
+  });
+  item.addEventListener("mouseleave", () => {
+    if (iframe) {
+      iframe.remove();
+      iframe = null;
+    }
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Project — MONOLITH</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=36" />
+</head>
+<body class="subpage">
+
+<div class="subpage-bg"></div>
+<div class="project-canvas"><canvas id="projCanvas"></canvas></div>
+<div class="grain" aria-hidden="true"></div>
+
+<header class="nav">
+  <a href="index.html" class="logo">
+    <span class="logo-mark">◆</span>
+    <span>MONOLITH</span>
+  </a>
+  <div class="nav-links">
+    <a href="work.html">Work</a>
+    <a href="studio.html">Studio</a>
+    <a href="index.html#4">Contact</a>
+    <a href="work.html" class="nav-back"><span>←</span> All Work</a>
+  </div>
+</header>
+
+<a href="index.html" id="homeBtn" class="home-btn" title="Back to home">← Home</a>
+
+<main id="projectMain">
+  <!-- content injected by project.js -->
+</main>
+
+<footer class="footer">
+  <span>© 2026 Monolith Studio</span>
+  <span>studio@monolith.creative</span>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="postprocessing.min.js"></script>
+<script src="sun.js?v=10"></script>
+<script src="SimplexNoise.js"></script>
+<script src="LightningStrike.js"></script>
+<script src="cloud.js"></script>
+<script src="LineSegmentsGeometry.js"></script>
+<script src="LineSegments2.js"></script>
+<script src="LineMaterial.js"></script>
+<script src="LineGeometry.js"></script>
+<script src="Line2.js"></script>
+<script src="wave.js?v=8"></script>
+<script src="NURBSUtils.js"></script>
+<script src="NURBSCurve.js"></script>
+<script src="fflate.min.js"></script>
+<script src="FBXLoader.js"></script>
+<script src="world.js?v=8"></script>
+<script src="thread.js?v=49"></script>
+<script src="GLTFLoader.js"></script>
+<script src="DRACOLoader.js"></script>
+<script src="RGBELoader.js"></script>
+<script src="pulse.js?v=12"></script>
+<script src="project.js?v=16"></script>
+<script>
+initProjectPage();
+// Set Home button to go back to the slide we came from
+(function() {
+  var hash = location.hash.replace('#', '');
+  var btn = document.getElementById('homeBtn');
+  if (btn && hash) btn.href = 'index.html#' + hash;
+})();
+</script>
+</body>
+</html>

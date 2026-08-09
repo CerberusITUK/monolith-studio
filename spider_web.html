@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Spider Web — Three.js</title>
+<style>
+  html, body { margin: 0; padding: 0; overflow: hidden; height: 100%; background: #05070c; }
+  canvas { display: block; }
+  #caption {
+    position: fixed; left: 16px; bottom: 14px;
+    font: 12px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: rgba(255,255,255,0.35);
+    pointer-events: none;
+    letter-spacing: 0.02em;
+  }
+</style>
+</head>
+<body>
+<div id="caption">move your mouse to look around</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function () {
+  // ---------- basic scene setup ----------
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.FogExp2(0x05070c, 0.045);
+
+  // a baked, already-soft backdrop — dusky gradient with a few out-of-focus bokeh
+  // glows, like a garden or window light blurred way behind the web
+  (function makeBackground() {
+    const c = document.createElement('canvas');
+    c.width = 1024; c.height = 683;
+    const ctx = c.getContext('2d');
+    // still dark, but with the bokeh glows given real presence this time
+    const grad = ctx.createLinearGradient(0, 0, 0, c.height);
+    grad.addColorStop(0, '#03050a');
+    grad.addColorStop(0.55, '#070d16');
+    grad.addColorStop(1, '#141008');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, c.width, c.height);
+
+    ctx.filter = 'blur(38px)';
+    const blobColors = [
+      'rgba(255,195,120,0.34)', 'rgba(130,175,255,0.28)',
+      'rgba(255,255,255,0.16)', 'rgba(110,210,185,0.22)'
+    ];
+    for (let i = 0; i < 18; i++) {
+      const x = Math.random() * c.width;
+      const y = c.height * (0.2 + Math.random() * 0.8);
+      const r = 55 + Math.random() * 130;
+      const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+      g.addColorStop(0, blobColors[Math.floor(Math.random() * blobColors.length)]);
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.filter = 'none';
+
+    scene.background = new THREE.CanvasTexture(c);
+  })();
+
+  const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100);
+  camera.position.set(0, 0.6, 11);
+  camera.lookAt(0, 0, 0);
+  camera.updateMatrixWorld();
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  document.body.appendChild(renderer.domElement);
+
+  // ---------- lightweight depth-of-field, built from scratch with plain shaders so the
+  // whole file stays self-contained (no external postprocessing addon scripts to load) ----------
+  function makeRT(w, h, withDepth) {
+    const rt = new THREE.WebGLRenderTarget(w, h, {
+      minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter,
+      format: THREE.RGBAFormat, type: THREE.UnsignedByteType
+    });
+    if (withDepth) rt.depthTexture = new THREE.DepthTexture();
+    return rt;
+  }
+  let dpr = Math.min(window.devicePixelRatio, 2);
+  let rtW = Math.floor(window.innerWidth * dpr);
+  let rtH = Math.floor(window.innerHeight * dpr);
+  let sceneRT = makeRT(rtW, rtH, true);
+  let blurRTA = makeRT(rtW, rtH, false);
+  let blurRTB = makeRT(rtW, rtH, false);
+
+  const fsVert = `
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = vec4(position.xy, 0.0, 1.0);
+    }
+  `;
+  const blurMat = new THREE.ShaderMaterial({
+    uniforms: {
+      tDiffuse: { value: null },
+      direction: { value: new THREE.Vector2(1, 0) },
+      resolution: { value: new THREE.Vector2(rtW, rtH) }
+    },
+    vertexShader: fsVert,
+    fragmentShader: `
+      uniform sampler2D tDiffuse;
+      uniform vec2 direction;
+      uniform vec2 resolution;
+      varying vec2 vUv;
+      void main() {
+        vec2 texel = direction / resolution;
+        vec4 sum = vec4(0.0);
+        sum += texture2D(tDiffuse, vUv - texel * 3.0) * 0.06;
+        sum += texture2D(tDiffuse, vUv - texel * 2.0) * 0.12;
+        sum += texture2D(tDiffuse, vUv - texel * 1.0) * 0.18;
+        sum += texture2D(tDiffuse, vUv) * 0.28;
+        sum += texture2D(tDiffuse, vUv + texel * 1.0) * 0.18;
+        sum += texture2D(tDiffuse, vUv + texel * 2.0) * 0.12;
+        sum += texture2D(tDiffuse, vUv + texel * 3.0) * 0.06;
+        gl_FragColor = sum;
+      }
+    `,
+    depthTest: false, depthWrite: false
+  });
+  const compositeMat = new THREE.ShaderMaterial({
+    uniforms: {
+      tSharp: { value: null },
+      tBlur: { value: null },
+      tDepth: { value: null },
+      cameraNear: { value: camera.near },
+      cameraFar: { value: camera.far },
+      focusDistance: { value: 10 },
+      focusRange: { value: 3.6 }
+    },
+    vertexShader: fsVert,
+    fragmentShader: `
+      uniform sampler2D tSharp;
+      uniform sampler2D tBlur;
+      uniform sampler2D tDepth;
+      uniform float cameraNear;
+      uniform float cameraFar;
+      uniform float focusDistance;
+      uniform float focusRange;
+      varying vec2 vUv;
+      float readDepth(vec2 uv) {
+        float z = texture2D(tDepth, uv).x;
+        float viewZ = (cameraNear * cameraFar) / ((cameraFar - cameraNear) * z - cameraFar);
+        return -viewZ;
+      }
+      void main() {
+        float dist = readDepth(vUv);
+        float coc = clamp(abs(dist - focusDistance) / focusRange, 0.0, 1.0);
+        coc = coc * coc; // gentler falloff near the focal plane
+        vec4 sharpColor = texture2D(tSharp, vUv);
+        vec4 blurColor = texture2D(tBlur, vUv);
+        vec4 result = mix(sharpColor, blurColor, coc);
+
+        // subtle vignette — draws the eye toward the center like a real lens would
+        vec2 centered = vUv - 0.5;
+        float vig = 1.0 - smoothstep(0.35, 0.92, length(centered) * 1.15);
+        result.rgb *= mix(0.62, 1.0, vig);
+
+        gl_FragColor = result;
+      }
+    `,
+    depthTest: false, depthWrite: false
+  });
+  const dofScene = new THREE.Scene();
+  const dofCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+  const fsQuad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), blurMat);
+  dofScene.add(fsQuad);
+
+  function renderWithDOF(t) {
+    renderer.setRenderTarget(sceneRT);
+    renderer.render(scene, camera);
+
+    fsQuad.material = blurMat;
+    blurMat.uniforms.tDiffuse.value = sceneRT.texture;
+    blurMat.uniforms.direction.value.set(1.2, 0);
+    renderer.setRenderTarget(blurRTA);
+    renderer.render(dofScene, dofCamera);
+
+    blurMat.uniforms.tDiffuse.value = blurRTA.texture;
+    blurMat.uniforms.direction.value.set(0, 1.2);
+    renderer.setRenderTarget(blurRTB);
+    renderer.render(dofScene, dofCamera);
+
+    fsQuad.material = compositeMat;
+    compositeMat.uniforms.tSharp.value = sceneRT.texture;
+    compositeMat.uniforms.tBlur.value = blurRTB.texture;
+    compositeMat.uniforms.tDepth.value = sceneRT.depthTexture;
+    // a slow "breathing" focus pull — drifts the focal plane gently deeper and shallower,
+    // like a cinematographer riding focus rather than a locked, static plane
+    compositeMat.uniforms.focusDistance.value = camera.position.length() + Math.sin(t * 0.045) * 1.3;
+    renderer.setRenderTarget(null);
+    renderer.render(dofScene, dofCamera);
+  }
+
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    dpr = Math.min(window.devicePixelRatio, 2);
+    rtW = Math.floor(window.innerWidth * dpr);
+    rtH = Math.floor(window.innerHeight * dpr);
+    sceneRT.setSize(rtW, rtH);
+    blurRTA.setSize(rtW, rtH);
+    blurRTB.setSize(rtW, rtH);
+    blurMat.uniforms.resolution.value.set(rtW, rtH);
+  });
+
+  // ---------- lighting — backlit but softened: enough fill that threads read as silvery
+  // silk with tone, not a harsh black silhouette against a bright rim ----------
+  scene.add(new THREE.AmbientLight(0x2a3548, 0.34));
+  const key = new THREE.DirectionalLight(0xe8f0ff, 0.75);
+  key.position.set(1.5, 3.5, -7); // behind the web, rim-lighting the strands toward camera
+  key.castShadow = false; // nothing meaningful casts here — was just adding harsh contrast
+  scene.add(key);
+  // a gentle front fill facing the camera, so the side of each strand toward us isn't pure black
+  const fill = new THREE.DirectionalLight(0xcfe0ff, 0.28);
+  fill.position.set(-1, 1.5, 8);
+  scene.add(fill);
+  const rim = new THREE.PointLight(0x6f8fce, 0.18, 11);
+  rim.position.set(-4.5, -2, 3.5);
+  scene.add(rim);
+  const glow = new THREE.PointLight(0xffe9c0, 0.08, 9);
+  glow.position.set(1, -1, 4.5);
+  scene.add(glow);
+  const sparkleA = new THREE.PointLight(0xffffff, 0.12, 7);
+  sparkleA.position.set(2.4, 2.6, 4);
+  scene.add(sparkleA);
+  const sparkleB = new THREE.PointLight(0xcfe4ff, 0.08, 7);
+  sparkleB.position.set(-2.6, -1.8, 4.5);
+  scene.add(sparkleB);
+
+  // ---------- background atmosphere: soft floating dust ----------
+  (function makeDust() {
+    const N = 220;
+    const geo = new THREE.BufferGeometry();
+    const pos = new Float32Array(N * 3);
+    for (let i = 0; i < N; i++) {
+      pos[i * 3 + 0] = (Math.random() - 0.5) * 40;
+      pos[i * 3 + 1] = (Math.random() - 0.5) * 24;
+      pos[i * 3 + 2] = (Math.random() - 0.5) * 30 - 5;
+    }
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+
+    const canvas = document.createElement('canvas');
+    canvas.width = 64; canvas.height = 64;
+    const ctx = canvas.getContext('2d');
+    const g = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+    g.addColorStop(0, 'rgba(255,255,255,0.9)');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 64, 64);
+    const tex = new THREE.CanvasTexture(canvas);
+
+    const mat = new THREE.PointsMaterial({
+      size: 0.09, map: tex, transparent: true, opacity: 0.35,
+      depthWrite: false, blending: THREE.AdditiveBlending, color: 0xaad0ff
+    });
+    const dust = new THREE.Points(geo, mat);
+    scene.add(dust);
+  })();
+
+  // ================= SPIDER WEB PHYSICS =================
+  const RINGS = 20;        // ring 0 = hub-adjacent, RINGS-1 = outer fixed anchor ring — a tight, dense coil
+  const SPOKES = 24;
+  const MAX_R = 4.6;       // rough reference scale, used for wind tapering only
+  const HUB_R = 0.22;
+
+  // how far out (world-space radius from the origin) the screen border sits at a given
+  // angle, on the web's own Z=0 plane — this is what lets the web's own outer ring reach
+  // the edges of the viewport directly, with no separate anchor threads needed
+  function computeScreenEdgeRadius(theta) {
+    const cx = Math.cos(theta), cy = Math.sin(theta);
+    const scale = 1 / Math.max(Math.abs(cx), Math.abs(cy));
+    // overshoot well past the exact edge — with only 24 spokes, the straight chords between
+    // them cut inside the true rectangle near corners, so we need real margin to guarantee
+    // full coverage there, not just a hair past the boundary
+    const margin = 1.4;
+    const ndc = new THREE.Vector3(cx * scale * margin, cy * scale * margin, 0.5).unproject(camera);
+    const dir = ndc.clone().sub(camera.position).normalize();
+    const pt = camera.position.clone().addScaledVector(dir, 11);
+    pt.z = 0;
+    return pt.length();
+  }
+
+  // fixed random seeds so the web silhouette is irregular, asymmetric and off-center but
+  // still consistent (non-crossing) across rings — real frames are lopsided polygons, not circles
+  const shapeSeed0 = Math.random() * Math.PI * 2;
+  const shapeSeed1 = Math.random() * Math.PI * 2;
+  const shapeSeed2 = Math.random() * Math.PI * 2;
+  const shapeSeed3 = Math.random() * Math.PI * 2;
+  function shapeWobble(angle) {
+    return 1
+      + 0.34 * Math.sin(angle * 1 + shapeSeed0)   // one big lobe — lopsided, off-center frame
+      + 0.22 * Math.sin(angle * 2 + shapeSeed1)
+      + 0.15 * Math.sin(angle * 3 - shapeSeed2)
+      + 0.09 * Math.sin(angle * 7 + shapeSeed3);
+  }
+  // each spoke gets a small, fixed angular offset so the web isn't a perfect regular grid
+  const spokeJitter = [];
+  for (let s = 0; s < SPOKES; s++) spokeJitter.push((Math.random() - 0.5) * 0.42);
+
+  // precompute each spoke's true reach — how far it must extend to hit the screen border
+  const spokeEdgeR = [];
+  for (let s = 0; s < SPOKES; s++) {
+    const angle = (s / SPOKES) * Math.PI * 2 + spokeJitter[s];
+    spokeEdgeR.push(computeScreenEdgeRadius(angle));
+  }
+
+  function ringRadius(r, s) {
+    // fairly even spacing throughout, only slightly denser near the hub — matches a real
+    // capture spiral, which winds tightly almost all the way from the center out
+    const t = r / (RINGS - 1);
+    return HUB_R + (spokeEdgeR[s] - HUB_R) * Math.pow(t, 1.05);
+  }
+
+  const nodes = [];   // {pos, oldPos, fixed, angle, ampScale}
+  const edges = [];   // [i, j, restLength]
+
+  function lerpAngle(a, b, t) {
+    let d = b - a;
+    while (d > Math.PI) d -= Math.PI * 2;
+    while (d < -Math.PI) d += Math.PI * 2;
+    return a + d * t;
+  }
+  function angleDiff(a, b) {
+    let d = Math.abs(a - b) % (Math.PI * 2);
+    if (d > Math.PI) d = Math.PI * 2 - d;
+    return d;
+  }
+  // a wedge of the outer boundary, around the bottom-left, that never got properly
+  // anchored — that section is left to sag and swing free, pulled over to the right
+  // as if the whole web is hanging off just its remaining good attachment points
+  const DETACH_CENTER = Math.PI * 1.22;   // ~220°, bottom-left
+  const DETACH_HALFWIDTH = Math.PI / 2.5; // ~72° wide
+
+  // hub node — a real web's hub isn't tied to anything, it's just where the spokes
+  // meet, so it hangs and sags along with the rest of the silk
+  const HUB = 0;
+  nodes.push({
+    pos: new THREE.Vector3(0, 0, 0),
+    oldPos: new THREE.Vector3(0, 0, 0),
+    fixed: false,
+    angle: 0, ampScale: 0.6
+  });
+
+  // outer-ring nodes that landed in the torn/unanchored wedge — tracked so we can tether
+  // them back over to the opposite side of the frame after the grid is built
+  const detachedIndices = [];
+
+  // grid[ring][spoke] -> node index
+  const grid = [];
+  for (let r = 0; r < RINGS; r++) {
+    grid.push([]);
+    for (let s = 0; s < SPOKES; s++) {
+      const angle = (s / SPOKES) * Math.PI * 2 + spokeJitter[s];
+      const t = r / (RINGS - 1);
+      // fade the organic wobble out toward the boundary, so the outer ring lands exactly
+      // on the screen edge while inner rings still feel hand-spun and irregular
+      const wobble = 1 + (shapeWobble(angle) - 1) * (1 - t);
+      const radius = ringRadius(r, s) * wobble;
+      const isOuter = r === RINGS - 1;
+      const jitter = isOuter ? 0.02 : 0.2;    // outer ring stays precisely on the edge...
+      const zJitter = isOuter ? 0 : 0.16;     // ...except where it's come loose (below)
+      let x = Math.cos(angle) * radius + (Math.random() - 0.5) * jitter;
+      let y = Math.sin(angle) * radius + (Math.random() - 0.5) * jitter;
+      const z = (Math.random() - 0.5) * zJitter;
+      let nodeFixed = isOuter;
+      let nodeAmpScale = isOuter ? 0 : 1;
+      let wasDetached = false;
+
+      if (isOuter) {
+        const baseAngle = (s / SPOKES) * Math.PI * 2;
+        const d = angleDiff(baseAngle, DETACH_CENTER);
+        if (d < DETACH_HALFWIDTH) {
+          // this stretch of the frame never anchored on its own side — it's been torn loose
+          // and dragged across, re-caught on the opposite (bottom-right) side of the frame instead
+          const depth = 1 - d / DETACH_HALFWIDTH; // 0 at the edge of the wedge, 1 at its center
+          const pull = 0.3 + Math.random() * 0.3;
+          x *= pull;
+          y *= pull;
+          x += depth * 2.6;
+          y -= depth * 0.55;
+          nodeFixed = false;
+          nodeAmpScale = 0.5;
+          wasDetached = true;
+        }
+      }
+
+      const idx = nodes.length;
+      const pos = new THREE.Vector3(x, y, z);
+      nodes.push({
+        pos: pos,
+        oldPos: pos.clone(),
+        fixed: nodeFixed,
+        angle: angle,
+        ampScale: nodeAmpScale
+      });
+      if (wasDetached) detachedIndices.push(idx);
+      grid[r].push(idx);
+    }
+  }
+
+  // nodes belonging to frame threads get hard-locked to the web's own Z=0 plane every
+  // frame — a safety net so tension/wind can never bow them forward out of that plane
+  const frameFlatNodes = [];
+
+  // subdivide a structural connection into several sub-segments, so each strand can carry
+  // its own faint catenary droop instead of being perfectly straight. `kind` tags the edge
+  // so dew drops later know how big/dense to be on that particular type of silk.
+  function subdivideEdge(iA, iB, subdivisions, slackFactor, ampOverride, kind) {
+    const posA = nodes[iA].pos, posB = nodes[iB].pos;
+    const totalDist = posA.distanceTo(posB);
+    const segRest = (totalDist * slackFactor) / subdivisions;
+    const k2 = kind || 'structural';
+    const flatten = k2 === 'frame';
+    let prev = iA;
+    for (let k = 1; k < subdivisions; k++) {
+      const t = k / subdivisions;
+      const p = posA.clone().lerp(posB, t);
+      p.y -= 0.0008 * Math.sin(t * Math.PI); // seed a barely-there initial droop
+      if (flatten) p.z = 0; // stay flush with the web's plane, not drifting toward camera
+      const idx = nodes.length;
+      nodes.push({
+        pos: p,
+        oldPos: p.clone(),
+        fixed: false,
+        angle: lerpAngle(nodes[iA].angle, nodes[iB].angle, t),
+        ampScale: ampOverride !== undefined ? ampOverride : 0.85
+      });
+      if (flatten) frameFlatNodes.push(idx);
+      edges.push([prev, idx, segRest, k2]);
+      prev = idx;
+    }
+    edges.push([prev, iB, segRest, k2]);
+  }
+
+  // a torn-off strand: dangles freely from one anchor point under gravity, with only a
+  // gentle sway from wind so it reads as hanging down, not blowing sideways
+  function hangLooseThread(originIdx, length) {
+    const originPos = nodes[originIdx].pos;
+    const dropDir = new THREE.Vector3(
+      (Math.random() - 0.5) * 0.12,
+      -1,
+      (Math.random() - 0.5) * 0.12
+    ).normalize();
+    const tipPos = originPos.clone().add(dropDir.multiplyScalar(length));
+    const tipIdx = nodes.length;
+    nodes.push({
+      pos: tipPos, oldPos: tipPos.clone(), fixed: false,
+      angle: nodes[originIdx].angle, ampScale: 0.08
+    });
+    const subdiv = Math.max(2, Math.round(length / 0.15));
+    subdivideEdge(originIdx, tipIdx, subdiv, 1.05 + Math.random() * 0.12, 0.08, 'loose');
+  }
+
+  const RADIAL_SUBDIV = 3;   // radial spokes: taut structural silk, essentially no sag
+  const RADIAL_SLACK = 1.0003;
+  const SPIRAL_SUBDIV = 9;   // enough points along each span to read as a smooth curve, not a kinked line
+  const SPIRAL_SLACK = 1.02; // real, visible catenary sag between spokes — this silk is stretchier than the spokes
+  const FRAME_SUBDIV = 3;     // long bridge lines out to the frame
+  const FRAME_SLACK = 1.0001; // pulled tight — these are what put the whole web under tension
+  const RADIAL_GAP_CHANCE = 0.035; // a spoke snapped partway out
+  const SPIRAL_GAP_CHANCE = 0.08;  // torn-out sections of spiral silk
+  const BROKEN_END_CHANCE = 0.4;   // of a gap, how often it leaves a dangling loose end
+
+  // radial threads: hub -> ring0 -> ring1 -> ... -> outer, with the occasional snapped section
+  for (let s = 0; s < SPOKES; s++) {
+    let prev = HUB;
+    for (let r = 0; r < RINGS; r++) {
+      const cur = grid[r][s];
+      if (r > 1 && Math.random() < RADIAL_GAP_CHANCE) {
+        if (Math.random() < BROKEN_END_CHANCE) hangLooseThread(prev, 0.3 + Math.random() * 1.1);
+      } else {
+        subdivideEdge(prev, cur, RADIAL_SUBDIV, RADIAL_SLACK, undefined, 'radial');
+      }
+      prev = cur;
+    }
+  }
+
+  // circumferential (spiral-like) threads, skip the very first ring near hub for a clean look,
+  // with torn gaps and frayed loose ends scattered through it
+  for (let r = 1; r < RINGS; r++) {
+    for (let s = 0; s < SPOKES; s++) {
+      const a = grid[r][s];
+      const b = grid[r][(s + 1) % SPOKES];
+      if (Math.random() < SPIRAL_GAP_CHANCE) {
+        if (Math.random() < BROKEN_END_CHANCE) {
+          hangLooseThread(Math.random() < 0.5 ? a : b, 0.25 + Math.random() * 1.3);
+        }
+        continue;
+      }
+      subdivideEdge(a, b, SPIRAL_SUBDIV, SPIRAL_SLACK, undefined, 'spiral');
+    }
+  }
+
+  // no separate anchor points — the web's own outer ring (already fixed in the grid setup
+  // above) is the attachment. The silk itself is what's nailed in place.
+
+  // the torn bottom-left wedge doesn't just hang free — it's been caught and tied off on the
+  // opposite (bottom-right) side of the frame, so a handful of taut lines sweep diagonally
+  // across the web, visibly pulling that whole loose section over to the right
+  const TETHER_CENTER = -Math.PI / 4;   // bottom-right, roughly opposite the torn wedge
+  const TETHER_HALFWIDTH = Math.PI / 7;
+  const tetherAnchors = [];
+  for (let s = 0; s < SPOKES; s++) {
+    const baseAngle = (s / SPOKES) * Math.PI * 2;
+    if (angleDiff(baseAngle, TETHER_CENTER) < TETHER_HALFWIDTH) {
+      tetherAnchors.push(grid[RINGS - 1][s]);
+    }
+  }
+  if (tetherAnchors.length) {
+    for (const di of detachedIndices) {
+      const target = tetherAnchors[Math.floor(Math.random() * tetherAnchors.length)];
+      const dist = nodes[di].pos.distanceTo(nodes[target].pos);
+      // lots of subdivisions + real slack so each tether reads as a long silk line bowing
+      // under its own tension, not a ruler-straight rod
+      const subdiv = Math.max(8, Math.round(dist / 0.12));
+      subdivideEdge(di, target, subdiv, 1.09 + Math.random() * 0.1, 0.55, 'frame');
+    }
+  }
+
+  // extra irregular scaffold threads — real webs collect stray silk crossing at odd angles,
+  // left over from construction or other insects passing through
+  const strayThreadCount = 70;
+  for (let i = 0; i < strayThreadCount; i++) {
+    const rA = 1 + Math.floor(Math.random() * (RINGS - 1));
+    const sA = Math.floor(Math.random() * SPOKES);
+    const rB = 1 + Math.floor(Math.random() * (RINGS - 1));
+    const sB = Math.floor(Math.random() * SPOKES);
+    const a = grid[rA][sA];
+    const b = grid[rB][sB];
+    if (a === b) continue;
+    const dist = nodes[a].pos.distanceTo(nodes[b].pos);
+    if (dist < 0.3 || dist > 3.4) continue; // keep them plausible in length
+    const subdiv = Math.max(2, Math.round(dist / 0.22));
+    subdivideEdge(a, b, subdiv, 1.004 + Math.random() * 0.01, undefined, 'stray');
+  }
+
+  // extra loose hanging threads — bits of torn silk that dangle free and sway in the breeze
+  const looseThreadCount = 6;
+  for (let i = 0; i < looseThreadCount; i++) {
+    const r = 1 + Math.floor(Math.random() * (RINGS - 1));
+    const s = Math.floor(Math.random() * SPOKES);
+    hangLooseThread(grid[r][s], 0.3 + Math.random() * 1.8);
+  }
+
+  // ---------- the entire web is traced out by tiny beaded dew drops, no solid strand at all ----------
+  const DROP_SPACING = 0.032;  // world units between drops — smaller = denser, stronger-looking "thread"
+  const BASE_DROP_R = 0.027;   // bigger, bolder drops so the strands read as solid lines
+
+  // size/density profile per silk type — fine spiral silk beads small and dense, thick
+  // frame lines collect fewer but noticeably larger drops
+  const DROP_PROFILE = {
+    spiral:     { spacingMul: 1.0,  min: 0.5,  max: 0.85 },
+    radial:     { spacingMul: 1.0,  min: 0.7,  max: 1.1  },
+    frame:      { spacingMul: 1.2,  min: 1.1,  max: 1.9  },
+    stray:      { spacingMul: 1.1,  min: 0.55, max: 0.9  },
+    loose:      { spacingMul: 1.1,  min: 0.55, max: 0.95 },
+    structural: { spacingMul: 1.0,  min: 0.7,  max: 1.05 }
+  };
+
+  const dewDescriptors = []; // { type: 'edge'|'node', edgeIdx/nodeIdx, t/offset, scale }
+  edges.forEach((edge, edgeIdx) => {
+    const restLen = edge[2];
+    const profile = DROP_PROFILE[edge[3]] || DROP_PROFILE.structural;
+    const n = Math.max(1, Math.round(restLen / (DROP_SPACING * profile.spacingMul)));
+    for (let k = 0; k < n; k++) {
+      const t = (k + 0.5) / n; // centered samples along the segment
+      const scale = profile.min + Math.random() * (profile.max - profile.min);
+      dewDescriptors.push({ type: 'edge', edgeIdx, t, scale });
+    }
+  });
+
+  // pooled dew clusters at spoke/spiral junctions — surface tension collects extra
+  // water right where threads cross, so those points get a little cluster of drops
+  const junctionNodes = [HUB];
+  for (let r = 0; r < RINGS; r++) for (let s = 0; s < SPOKES; s++) junctionNodes.push(grid[r][s]);
+  junctionNodes.forEach(nodeIdx => {
+    if (Math.random() > 0.85) return; // not every junction pools water
+    const clusterSize = 1 + Math.floor(Math.random() * 3);
+    for (let c = 0; c < clusterSize; c++) {
+      const offset = new THREE.Vector3(
+        (Math.random() - 0.5) * 0.05,
+        (Math.random() - 0.5) * 0.05 - 0.01,
+        (Math.random() - 0.5) * 0.05
+      );
+      dewDescriptors.push({ type: 'node', nodeIdx, offset, scale: 1.0 + Math.random() * 0.7 });
+    }
+  });
+
+  const dewGeo = new THREE.SphereGeometry(1, 8, 8); // unit sphere, scaled per-instance
+  const dewMat = new THREE.MeshPhysicalMaterial({
+    color: 0xffffff,
+    transparent: true,
+    opacity: 0.6,
+    roughness: 0.06,
+    metalness: 0,
+    transmission: 0.85,   // properly see-through, more like a glassy droplet than a solid bead
+    thickness: 0.2,
+    ior: 1.33,
+    clearcoat: 1,
+    clearcoatRoughness: 0.03
+  });
+  const dewMesh = new THREE.InstancedMesh(dewGeo, dewMat, dewDescriptors.length);
+  dewMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+  dewMesh.castShadow = false;  // avoid harsh speckled self-shadowing between thousands of tiny drops
+  dewMesh.receiveShadow = true;
+  scene.add(dewMesh);
+
+  // ---------- occasional twinkle — a handful of dew beads catch a brief extra glint ----------
+  const twinkleCount = 24;
+  const twinkleDescriptors = [];
+  {
+    const edgeOnly = dewDescriptors.filter(d => d.type === 'edge');
+    for (let i = 0; i < twinkleCount && edgeOnly.length; i++) {
+      twinkleDescriptors.push(edgeOnly[Math.floor(Math.random() * edgeOnly.length)]);
+    }
+  }
+  const twinkleGeo = new THREE.BufferGeometry();
+  const twinklePos = new Float32Array(twinkleDescriptors.length * 3);
+  const twinklePhase = new Float32Array(twinkleDescriptors.length);
+  for (let i = 0; i < twinkleDescriptors.length; i++) twinklePhase[i] = Math.random() * Math.PI * 2 * 100;
+  twinkleGeo.setAttribute('position', new THREE.BufferAttribute(twinklePos, 3));
+  twinkleGeo.setAttribute('aPhase', new THREE.BufferAttribute(twinklePhase, 1));
+
+  const twinkleMat = new THREE.ShaderMaterial({
+    uniforms: { uTime: { value: 0 } },
+    vertexShader: `
+      attribute float aPhase;
+      varying float vPulse;
+      uniform float uTime;
+      void main() {
+        // mostly dark, with a rare, brief, bright flash — spaced out per-point by phase
+        float p = pow(max(0.0, sin(uTime * 0.11 + aPhase)), 40.0);
+        vPulse = p;
+        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+        gl_PointSize = (5.0 + p * 10.0) * (12.0 / -mvPosition.z);
+        gl_Position = projectionMatrix * mvPosition;
+      }
+    `,
+    fragmentShader: `
+      varying float vPulse;
+      void main() {
+        vec2 c = gl_PointCoord - 0.5;
+        float d = length(c);
+        float a = smoothstep(0.5, 0.0, d) * vPulse;
+        if (a < 0.01) discard;
+        gl_FragColor = vec4(1.0, 0.98, 0.9, a);
+      }
+    `,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending
+  });
+  const twinkleMesh = new THREE.Points(twinkleGeo, twinkleMat);
+  scene.add(twinkleMesh);
+
+  const _m = new THREE.Matrix4();
+  const _q = new THREE.Quaternion();          // reoriented per bead, along its thread
+  const _identityQ = new THREE.Quaternion();  // stays identity, for round pooled clusters
+  const _mid = new THREE.Vector3();
+  const _scale = new THREE.Vector3();
+  const _dir = new THREE.Vector3();
+  const _up = new THREE.Vector3(0, 1, 0);
+
+  // ================= WIND SIMULATION (Verlet + distance constraints) =================
+  const GRAVITY = new THREE.Vector3(0, -0.0004, 0);
+  const DAMPING = 0.975;
+  const CONSTRAINT_ITERATIONS = 7;
+
+  const WIND_AMPLITUDE = 0.005; // almost still air
+  const WIND_SPEED = 0.12;     // slow temporal frequency
+  const WIND_WAVE_K = 0.6;     // spatial frequency — one smooth bend per thread, no per-node flutter
+
+  function computeWind(node, t) {
+    const baseline = 0.55 + 0.15 * Math.sin(t * 0.025 + 3.1); // slow, near-still baseline
+    // a rare, brief gust — mostly zero, with an occasional gentle swell every ~28s
+    const gustPulse = Math.pow(Math.max(0, Math.sin(t * (2 * Math.PI / 28))), 24);
+    const gust = baseline + gustPulse * 0.9;
+    const distFromHub = Math.min(node.pos.length() / MAX_R, 1);
+    const freedom = Math.sin(distFromHub * Math.PI); // 0 at hub & outer edge, most free mid-web
+    const amp = WIND_AMPLITUDE * node.ampScale * gust * (0.3 + 0.7 * freedom);
+
+    const bend = Math.sin(t * WIND_SPEED + node.angle * WIND_WAVE_K); // single, simple bend
+    return new THREE.Vector3(bend * amp, bend * amp * 0.2, bend * amp * 0.7);
+  }
+
+  function verletStep(t, dt) {
+    for (let i = 0; i < nodes.length; i++) {
+      const n = nodes[i];
+      if (n.fixed) continue;
+      const wind = computeWind(n, t);
+      const accel = wind.clone().add(GRAVITY);
+
+      const velocity = n.pos.clone().sub(n.oldPos).multiplyScalar(DAMPING);
+      const newPos = n.pos.clone().add(velocity).add(accel.multiplyScalar(dt * dt));
+
+      n.oldPos.copy(n.pos);
+      n.pos.copy(newPos);
+    }
+
+    for (let iter = 0; iter < CONSTRAINT_ITERATIONS; iter++) {
+      for (let e = 0; e < edges.length; e++) {
+        const [ia, ib, rest] = edges[e];
+        const na = nodes[ia], nb = nodes[ib];
+        const delta = nb.pos.clone().sub(na.pos);
+        const dist = delta.length() || 0.0001;
+        const diff = (dist - rest) / dist;
+
+        const aFixed = na.fixed, bFixed = nb.fixed;
+        if (aFixed && bFixed) continue;
+        if (aFixed) {
+          nb.pos.sub(delta.clone().multiplyScalar(diff));
+        } else if (bFixed) {
+          na.pos.add(delta.clone().multiplyScalar(diff));
+        } else {
+          na.pos.add(delta.clone().multiplyScalar(0.5 * diff));
+          nb.pos.sub(delta.clone().multiplyScalar(0.5 * diff));
+        }
+      }
+    }
+  }
+
+  function updateGeometry() {
+    for (let i = 0; i < dewDescriptors.length; i++) {
+      const d = dewDescriptors[i];
+      if (d.type === 'node') {
+        // pooled junction clusters stay round
+        _mid.copy(nodes[d.nodeIdx].pos).add(d.offset);
+        _scale.setScalar(BASE_DROP_R * d.scale);
+        _m.compose(_mid, _identityQ, _scale);
+      } else {
+        // beaded along a strand — stretch each bead slightly along the thread's own
+        // direction so it reads as a bright dash of dew, like backlit silk in a photo
+        const [ia, ib] = edges[d.edgeIdx];
+        const a = nodes[ia].pos, b = nodes[ib].pos;
+        _mid.lerpVectors(a, b, d.t);
+        _dir.subVectors(b, a);
+        const len = _dir.length() || 0.0001;
+        _dir.normalize();
+        _q.setFromUnitVectors(_up, _dir);
+        const r = BASE_DROP_R * d.scale;
+        _scale.set(r * 0.8, r * 2.1, r * 0.8);
+        _m.compose(_mid, _q, _scale);
+      }
+      dewMesh.setMatrixAt(i, _m);
+    }
+    dewMesh.instanceMatrix.needsUpdate = true;
+
+    const tPos = twinkleGeo.attributes.position.array;
+    for (let i = 0; i < twinkleDescriptors.length; i++) {
+      const d = twinkleDescriptors[i];
+      const [ia, ib] = edges[d.edgeIdx];
+      _mid.lerpVectors(nodes[ia].pos, nodes[ib].pos, d.t);
+      tPos[i * 3] = _mid.x; tPos[i * 3 + 1] = _mid.y; tPos[i * 3 + 2] = _mid.z;
+    }
+    twinkleGeo.attributes.position.needsUpdate = true;
+  }
+
+  // ---------- gentle camera drift + mouse parallax ----------
+  let mouseX = 0, mouseY = 0;
+  window.addEventListener('mousemove', (e) => {
+    mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+    mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+  });
+
+  const clock = new THREE.Clock();
+
+  function animate() {
+    requestAnimationFrame(animate);
+    const t = clock.getElapsedTime();
+    const dt = 1; // fixed logical timestep for constraint stability
+
+    // camera stays essentially put — the frame is anchored to true fixed world points,
+    // so a wandering camera would make those anchors appear to drift on screen
+    const orbit = t * 0.02;
+    camera.position.x += ((Math.sin(orbit) * 0.25 + mouseX * 0.18) - camera.position.x) * 0.03;
+    camera.position.y += ((0.5 + Math.cos(orbit * 0.7) * 0.08 - mouseY * 0.12) - camera.position.y) * 0.03;
+    camera.position.z = 11;
+    camera.lookAt(0, 0, 0);
+    camera.updateMatrixWorld();
+
+    verletStep(t, dt);
+
+    // hard-lock the frame threads to the web's plane every frame — guarantees they can
+    // never bow forward toward the camera, regardless of any residual wind/tension drift
+    for (let i = 0; i < frameFlatNodes.length; i++) {
+      const n = nodes[frameFlatNodes[i]];
+      n.pos.z = 0;
+      n.oldPos.z = 0;
+    }
+
+    updateGeometry();
+    twinkleMat.uniforms.uTime.value = t;
+
+    renderWithDOF(t);
+  }
+  animate();
+})();
+</script>
+</body>
+</html>

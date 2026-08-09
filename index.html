@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MONOLITH — Creative Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=36" />
+</head>
+<body class="page-home">
+
+<!-- Three.js background -->
+<div id="webgl"></div>
+<div class="overlay" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+
+<!-- Nav -->
+<header class="nav">
+  <a href="index.html" class="logo">
+    <span class="logo-mark">◆</span>
+    <span>MONOLITH</span>
+  </a>
+  <button class="menu-btn" id="menuBtn" aria-label="Open menu">
+    <span>Menu</span>
+    <span class="menu-bars"><i></i><i></i></span>
+  </button>
+</header>
+
+<!-- Right-side progress rail -->
+<aside class="rail" id="rail" aria-hidden="true">
+  <div class="rail-track"><span class="rail-fill" id="railFill"></span></div>
+  <div class="rail-dots" id="railDots"></div>
+</aside>
+
+<!-- Slide deck -->
+<main class="deck" id="deck">
+
+  <!-- SLIDE 0 — HERO: "Designing Worlds That Move" → Earth globe -->
+  <section class="slide" id="hero" data-slide="0" data-shape="globe">
+    <div class="slide-inner">
+      <p class="eyebrow">Creative Studio · est. 2017 · London / Tokyo</p>
+      <h1 class="headline">
+        <span class="line"><span>Designing</span></span>
+        <span class="line"><span>Worlds</span></span>
+        <span class="line"><span>That&nbsp;Move</span></span>
+      </h1>
+      <div class="slide-body">
+        <p class="lede">We build cinematic brands, interactive experiences, and motion systems for ambitious companies — from first frame to final pixel.</p>
+        <div class="carousel" data-carousel>
+          <div class="carousel-track">
+            <article class="card"><h3>Brand Films</h3><p>Cinematic film craft for brands that need to feel, not just look.</p></article>
+            <article class="card"><h3>Interactive Web</h3><p>WebGL experiences engineered as products, not pages.</p></article>
+            <article class="card"><h3>Motion Systems</h3><p>Living identity systems with reusable motion language.</p></article>
+            <article class="card"><h3>Art Direction</h3><p>Creative direction across film, print, and screen.</p></article>
+          </div>
+          <div class="carousel-nav">
+            <button class="crl-prev" aria-label="Previous">prev</button>
+            <button class="crl-next" aria-label="Next">next</button>
+          </div>
+        </div>
+        <a href="work.html" class="cta">See Our Work <span>→</span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 1 — DISCIPLINES: "What We Do" → Network of connected nodes -->
+  <section class="slide" id="disciplines" data-slide="1" data-shape="streams">
+    <div class="slide-inner">
+      <p class="eyebrow">02 — Disciplines</p>
+      <h1 class="headline">
+        <span class="line"><span>What</span></span>
+        <span class="line"><span>We&nbsp;Do</span></span>
+      </h1>
+      <div class="slide-body">
+        <p class="lede">Six disciplines, one studio. We work across the entire creative pipeline — no handoffs, no lost threads, no gaps between idea and delivery.</p>
+        <div class="carousel" data-carousel>
+          <div class="carousel-track">
+            <article class="card"><h3>Brand Identity</h3><p>Visual systems built to flex across every surface, screen, and scale.</p></article>
+            <article class="card"><h3>Film &amp; Motion</h3><p>Live-action, animation, and 3D — produced and posted in-house.</p></article>
+            <article class="card"><h3>Interactive Web</h3><p>WebGL sites and products engineered for performance and awe.</p></article>
+            <article class="card"><h3>Art Direction</h3><p>Creative direction that holds the line from pitch to final delivery.</p></article>
+            <article class="card"><h3>Sound Design</h3><p>Original score and sound design that carries the picture.</p></article>
+            <article class="card"><h3>Strategy</h3><p>Positioning, narrative, and the brief that anchors every move.</p></article>
+          </div>
+          <div class="carousel-nav">
+            <button class="crl-prev" aria-label="Previous">prev</button>
+            <button class="crl-next" aria-label="Next">next</button>
+          </div>
+        </div>
+        <a href="#2" class="cta" data-go="2">Our Process <span>→</span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 2 — PROCESS: "How We Move" → Flowing ribbon -->
+  <section class="slide" id="process" data-slide="2" data-shape="ribbon">
+    <div class="slide-inner">
+      <p class="eyebrow">03 — Process</p>
+      <h1 class="headline">
+        <span class="line"><span>How</span></span>
+        <span class="line"><span>We&nbsp;Move</span></span>
+      </h1>
+      <div class="slide-body">
+        <p class="lede">Every project follows a four-phase current — from first spark to final delivery, with momentum that never stalls.</p>
+        <div class="carousel" data-carousel>
+          <div class="carousel-track">
+            <article class="card"><h3>01 — Discover</h3><p>Immersion, research, and the creative brief that anchors the mission.</p></article>
+            <article class="card"><h3>02 — Define</h3><p>Concept, direction, and the systems thinking that makes it scalable.</p></article>
+            <article class="card"><h3>03 — Design</h3><p>Craft. Where the work becomes real — frame by frame, pixel by pixel.</p></article>
+            <article class="card"><h3>04 — Deliver</h3><p>Production, launch, and ongoing evolution. We stay on station.</p></article>
+          </div>
+          <div class="carousel-nav">
+            <button class="crl-prev" aria-label="Previous">prev</button>
+            <button class="crl-next" aria-label="Next">next</button>
+          </div>
+        </div>
+        <a href="#3" class="cta" data-go="3">See The Work <span>→</span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 3 — WORK: "Selected Work" → Grid wall -->
+  <section class="slide" id="work" data-slide="3" data-shape="wall">
+    <div class="slide-inner">
+      <p class="eyebrow">04 — Selected Work</p>
+      <h1 class="headline">
+        <span class="line"><span>Selected</span></span>
+        <span class="line"><span>Work</span></span>
+      </h1>
+      <div class="slide-body">
+        <p class="lede">Six recent missions across film, identity, and interactive. Each one a world we built from scratch.</p>
+        <a href="work.html" class="cta">Full Archive <span>→</span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 3.1–3.6 — Project page previews -->
+  <section class="slide project-preview" id="lumen" data-slide="3.1" data-shape="wall" data-project="lumen">
+    <a href="project.html?id=lumen#lumen" class="project-preview-link">
+      <div class="project-preview-overlay"></div>
+      <iframe data-src="project.html?id=lumen#lumen" class="project-preview-iframe" tabindex="-1"></iframe>
+      <div class="project-preview-label">Lumen <span>→</span><span class="project-preview-btn">Preview</span></div>
+    </a>
+  </section>
+  <section class="slide project-preview" id="strata" data-slide="3.2" data-shape="wall" data-project="strata">
+    <a href="project.html?id=strata#strata" class="project-preview-link">
+      <div class="project-preview-overlay"></div>
+      <iframe data-src="project.html?id=strata#strata" class="project-preview-iframe" tabindex="-1"></iframe>
+      <div class="project-preview-label">Strata <span>→</span><span class="project-preview-btn">Preview</span></div>
+    </a>
+  </section>
+  <section class="slide project-preview" id="wavelength" data-slide="3.3" data-shape="wall" data-project="wavelength">
+    <a href="project.html?id=wavelength#wavelength" class="project-preview-link">
+      <div class="project-preview-overlay"></div>
+      <iframe data-src="project.html?id=wavelength#wavelength" class="project-preview-iframe" tabindex="-1"></iframe>
+      <div class="project-preview-label">Wavelength <span>→</span><span class="project-preview-btn">Preview</span></div>
+    </a>
+  </section>
+  <section class="slide project-preview" id="latitude" data-slide="3.4" data-shape="wall" data-project="latitude">
+    <a href="project.html?id=latitude#latitude" class="project-preview-link">
+      <div class="project-preview-overlay"></div>
+      <iframe data-src="project.html?id=latitude#latitude" class="project-preview-iframe" tabindex="-1"></iframe>
+      <div class="project-preview-label">Latitude <span>→</span><span class="project-preview-btn">Preview</span></div>
+    </a>
+  </section>
+  <section class="slide project-preview" id="threadwork" data-slide="3.5" data-shape="wall" data-project="threadwork">
+    <a href="project.html?id=threadwork#threadwork" class="project-preview-link">
+      <div class="project-preview-overlay"></div>
+      <iframe data-src="project.html?id=threadwork#threadwork" class="project-preview-iframe" tabindex="-1"></iframe>
+      <div class="project-preview-label">Threadwork <span>→</span><span class="project-preview-btn">Preview</span></div>
+    </a>
+  </section>
+  <section class="slide project-preview" id="pulse" data-slide="3.6" data-shape="wall" data-project="pulse">
+    <a href="project.html?id=pulse#pulse" class="project-preview-link">
+      <div class="project-preview-overlay"></div>
+      <iframe data-src="project.html?id=pulse#pulse" class="project-preview-iframe" tabindex="-1"></iframe>
+      <div class="project-preview-label">Pulse <span>→</span><span class="project-preview-btn">Preview</span></div>
+    </a>
+  </section>
+
+  <!-- SLIDE 10 — CONTACT: "Let's Build Something" → Pulsing beacon -->
+  <section class="slide" id="contact" data-slide="10" data-shape="crystal">
+    <div class="slide-inner">
+      <p class="eyebrow">05 — Contact</p>
+      <h1 class="headline">
+        <span class="line"><span>Let's</span></span>
+        <span class="line"><span>Build</span></span>
+        <span class="line"><span>Something</span></span>
+      </h1>
+      <div class="slide-body contact-body">
+        <p class="lede">We take on a handful of projects each year. If you've got something ambitious, we'd love to hear about it.</p>
+        <a href="mailto:studio@monolith.creative" class="contact-mail">studio@monolith.creative <span>→</span></a>
+        <div class="socials">
+          <a href="#">Instagram</a><a href="#">Behance</a><a href="#">Vimeo</a><a href="#">LinkedIn</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Scroll hint -->
+<div class="scroll-hint" id="scrollHint">
+  <span>Scroll</span>
+  <span class="scroll-line"><i></i></span>
+</div>
+
+<!-- Menu overlay -->
+<div class="menu-overlay" id="menuOverlay" aria-hidden="true">
+  <nav class="menu-nav">
+    <a href="index.html">Home</a>
+    <a href="work.html">Work</a>
+    <a href="studio.html">Studio</a>
+    <a href="#4" data-go="4">Contact</a>
+  </nav>
+  <div class="menu-foot">
+    <span>studio@monolith.creative</span>
+    <span>© 2026 Monolith Studio</span>
+  </div>
+</div>
+
+<footer class="footer">
+  <span>© 2026 Monolith Studio</span>
+  <span>Built in the dark</span>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="script.js?v=71"></script>
+</body>
+</html>
