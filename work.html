@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=77" />
+<link rel="stylesheet" href="styles.css?v=60" />
 </head>
 <body class="subpage">
 
@@ -47,6 +47,7 @@
 
 <main>
   <section class="subpage-hero">
+    <iframe class="hero-particles" src="index.html?embed=1#work" frameborder="0" scrolling="no" aria-hidden="true"></iframe>
     <p class="subpage-eyebrow sr">Archive · 2017–2025</p>
     <h1 class="subpage-title sr">Selected<br/>Work</h1>
     <p class="subpage-subtitle sr">Six worlds we built from scratch — across film, identity, motion, and interactive. Click any project to dive in.</p>
@@ -149,6 +150,20 @@
   <span>© 2026 Monolith Studio</span>
   <span>studio@monolith.creative</span>
 </footer>
+
+<button class="return-top" id="returnTop" aria-label="Return to top">↑</button>
+<script>
+(function() {
+  var btn = document.getElementById('returnTop');
+  window.addEventListener('scroll', function() {
+    if (window.scrollY > 300) btn.classList.add('visible');
+    else btn.classList.remove('visible');
+  });
+  btn.addEventListener('click', function() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+})();
+</script>
 
 <button class="return-top" id="returnTop" aria-label="Return to top">↑</button>
 <script>

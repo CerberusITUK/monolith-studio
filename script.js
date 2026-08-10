@@ -691,6 +691,7 @@
   }
 
   let renderPaused = false;
+  let previewZoom = 0; // 0 = normal, 1 = zoomed out (eased)
 
   // Pause rendering when off-screen (important for embed/iframe mode)
   if (isEmbed && typeof IntersectionObserver !== "undefined") {
@@ -706,7 +707,9 @@
     clock += 0.005;
     // Update particles on all slides (faded on preview via opacity)
     var isPreview = slides[current] && slides[current].classList.contains("project-preview");
-    if (points && !isPreview) {
+    // Ease previewZoom toward 1 (zoomed out) or 0 (normal) for smooth transition
+    previewZoom += ((isPreview ? 1 : 0) - previewZoom) * 0.04;
+    if (points && previewZoom < 0.98) {
       const tgt = targets[currentShape];
       const tgtCol = tgt.col;
       const lerp = 0.05;
@@ -903,24 +906,29 @@
         wire.rotation.y = -clock * 0.5 + rotY;
         wire.rotation.x = clock * 0.25 + rotX;
       }
-
       // Update bokeh
       if (bokehMat) bokehMat.uniforms.uTime.value = clock;
     }
 
+    // Zoom particles/wire/bokeh out when on preview slide (eased, always runs)
+    if (points) {
+      points.position.z += (-100 * previewZoom - points.position.z) * 0.04;
+      points.visible = previewZoom < 0.95;
+    }
+    if (wire) {
+      wire.position.z += (-100 * previewZoom - wire.position.z) * 0.04;
+      wire.visible = previewZoom < 0.95;
+    }
+    if (bokehPoints) {
+      bokehPoints.position.z += (-100 * previewZoom - bokehPoints.position.z) * 0.04;
+      bokehPoints.visible = previewZoom < 0.95;
+    }
+
     // Always update background color + render, even on preview slides
     if (renderer) {
-      // Fade 3D particles + wire on preview slides, keep bokeh
-      if (points) {
-        points.visible = true;
-        pointsMat.opacity = isPreview ? 0.15 : 1.0;
-      }
-      if (wire) {
-        wire.visible = true;
-        wire.material.opacity = isPreview ? 0.02 : 0.06;
-      }
-      // Update bokeh only when not on preview (frozen static on preview)
-      if (bokehMat && !isPreview) bokehMat.uniforms.uTime.value = clock;
+      // Fade particles opacity on preview (eased with previewZoom)
+      if (pointsMat) pointsMat.opacity = 1.0 - previewZoom * 0.85;
+      if (wire) wire.material.opacity = 0.06 - previewZoom * 0.04;
 
       currentBg[0] += (targetBg[0] - currentBg[0]) * 0.03;
       currentBg[1] += (targetBg[1] - currentBg[1]) * 0.03;

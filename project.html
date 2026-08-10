@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=66" />
+<link rel="stylesheet" href="styles.css?v=60" />
 </head>
 <body class="subpage">
 
@@ -45,6 +45,7 @@
 
 <a href="index.html" id="homeBtn" class="home-btn" title="Back to all works">← All Works</a>
 <a href="#" id="previewBtn" class="home-btn" style="display:none;" title="View full project">Preview →</a>
+<a href="#" id="previewBtn" class="home-btn" style="display:none;" title="View full project">Preview →</a>
 
 <main id="projectMain">
   <!-- content injected by project.js -->
@@ -54,6 +55,8 @@
   <span>© 2026 Monolith Studio</span>
   <span>studio@monolith.creative</span>
 </footer>
+
+<button class="return-top" id="returnTop" aria-label="Return to top">↑</button>
 
 <button class="return-top" id="returnTop" aria-label="Return to top">↑</button>
 
@@ -82,17 +85,6 @@
 <script src="project.js?v=17"></script>
 <script>
 initProjectPage();
-// Menu toggle
-(function() {
-  var menuBtn = document.getElementById('menuBtn');
-  var menuOverlay = document.getElementById('menuOverlay');
-  var menuOpen = false;
-  function openMenu() { menuOpen = true; menuBtn.classList.add('open'); menuOverlay.classList.add('open'); menuOverlay.setAttribute('aria-hidden', 'false'); }
-  function closeMenu() { menuOpen = false; menuBtn.classList.remove('open'); menuOverlay.classList.remove('open'); menuOverlay.setAttribute('aria-hidden', 'true'); }
-  menuBtn.addEventListener('click', function() { menuOpen ? closeMenu() : openMenu(); });
-  menuOverlay.addEventListener('click', function(e) { if (e.target === menuOverlay) closeMenu(); });
-  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeMenu(); });
-})();
 // Return to top button
 (function() {
   var btn = document.getElementById('returnTop');
@@ -110,15 +102,14 @@ initProjectPage();
   var inIframe = window.self !== window.top;
   var homeBtn = document.getElementById('homeBtn');
   var previewBtn = document.getElementById('previewBtn');
+  var inIframe = window.self !== window.top;
+  var homeBtn = document.getElementById('homeBtn');
+  var previewBtn = document.getElementById('previewBtn');
   var hash = location.hash.replace('#', '');
   if (inIframe) {
     if (homeBtn) homeBtn.style.display = 'none';
     var rt = document.getElementById('returnTop');
     if (rt) rt.style.display = 'none';
-    var mb = document.getElementById('menuBtn');
-    var mo = document.getElementById('menuOverlay');
-    if (mb) mb.style.display = 'none';
-    if (mo) mo.style.display = 'none';
     // Only show Preview button if loaded from index.html, not work.html
     var fromWork = new URLSearchParams(location.search).get("from") === "work";
     if (previewBtn && !fromWork) {
@@ -129,7 +120,7 @@ initProjectPage();
       previewBtn.style.display = 'none';
     }
   } else {
-    if (homeBtn) homeBtn.href = 'work.html';
+    if (homeBtn && hash) homeBtn.href = 'index.html#' + hash;
   }
 })();
 </script>

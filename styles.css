@@ -13,6 +13,18 @@
 .embed-mode #webgl { position: fixed; inset: 0; z-index: 0; }
 .embed-mode body { overflow: hidden; }
 
+/* Embed mode — only show particles, hide everything else */
+.embed-mode .nav,
+.embed-mode .deck,
+.embed-mode .scroll-hint,
+.embed-mode .menu-overlay,
+.embed-mode .footer,
+.embed-mode .overlay,
+.embed-mode .grain,
+.embed-mode .progress-rail { display: none !important; }
+.embed-mode #webgl { position: fixed; inset: 0; z-index: 0; }
+.embed-mode body { overflow: hidden; }
+
 /* Global text shadow for readability over particles */
 body, .nav, .menu-overlay, .footer, .subpage-hero, .work-grid,
 .studio-section, .project-hero, .project-section, .project-nav,
@@ -173,6 +185,7 @@ button { background: none; border: 0; color: inherit; font: inherit; cursor: poi
   opacity: 0; transform: translateY(20px);
   transition: opacity .8s var(--ease-out) .15s, transform .8s var(--ease-out) .15s;
   text-shadow: 3px 3px 0 rgba(0,0,0,1), 2px 2px 0 rgba(0,0,0,1), 1px 1px 0 rgba(0,0,0,1);
+  text-shadow: 3px 3px 0 rgba(0,0,0,1), 2px 2px 0 rgba(0,0,0,1), 1px 1px 0 rgba(0,0,0,1);
 }
 .headline {
   grid-column: 1 / span 8;
@@ -182,6 +195,7 @@ button { background: none; border: 0; color: inherit; font: inherit; cursor: poi
   line-height: 0.92;
   letter-spacing: -0.01em;
   text-transform: uppercase;
+  text-shadow: 4px 4px 0 rgba(0,0,0,1), 3px 3px 0 rgba(0,0,0,1), 2px 2px 0 rgba(0,0,0,1), 1px 1px 0 rgba(0,0,0,1);
   text-shadow: 4px 4px 0 rgba(0,0,0,1), 3px 3px 0 rgba(0,0,0,1), 2px 2px 0 rgba(0,0,0,1), 1px 1px 0 rgba(0,0,0,1);
 }
 @media (max-width: 900px) { .headline { grid-column: 1 / -1; } }
@@ -236,6 +250,7 @@ button { background: none; border: 0; color: inherit; font: inherit; cursor: poi
   line-height: 1.55;
   max-width: 38ch;
   text-shadow: 3px 3px 0 rgba(0,0,0,1), 2px 2px 0 rgba(0,0,0,1), 1px 1px 0 rgba(0,0,0,1);
+  text-shadow: 3px 3px 0 rgba(0,0,0,1), 2px 2px 0 rgba(0,0,0,1), 1px 1px 0 rgba(0,0,0,1);
 }
 
 /* ===== Project preview slides ===== */
@@ -243,6 +258,7 @@ button { background: none; border: 0; color: inherit; font: inherit; cursor: poi
   display: flex;
   align-items: center;
   justify-content: center;
+  padding-top: 10vh;
   padding-top: 10vh;
 }
 .project-preview-link {
@@ -376,6 +392,7 @@ button { background: none; border: 0; color: inherit; font: inherit; cursor: poi
   align-self: flex-start;
   transition: gap .3s var(--ease);
   text-shadow: 3px 3px 0 rgba(0,0,0,1), 2px 2px 0 rgba(0,0,0,1), 1px 1px 0 rgba(0,0,0,1);
+  text-shadow: 3px 3px 0 rgba(0,0,0,1), 2px 2px 0 rgba(0,0,0,1), 1px 1px 0 rgba(0,0,0,1);
 }
 .cta span { transition: transform .3s var(--ease); }
 .cta:hover { gap: 1rem; }
@@ -386,18 +403,13 @@ button { background: none; border: 0; color: inherit; font: inherit; cursor: poi
 
 /* Form slide */
 .form-slide-inner {
-  display: flex !important;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   max-width: 600px;
-  margin: 0 auto;
-  grid-template-columns: none !important;
 }
 .form-slide-inner .eyebrow {
   text-align: center;
   margin-bottom: 1rem;
-  grid-column: auto !important;
 }
 .form-success {
   max-width: none !important;
@@ -431,7 +443,6 @@ button { background: none; border: 0; color: inherit; font: inherit; cursor: poi
   color: var(--ink);
   outline: none;
   transition: border-color .3s var(--ease);
-  text-shadow: 3px 3px 0 rgba(0,0,0,1), 2px 2px 0 rgba(0,0,0,1), 1px 1px 0 rgba(0,0,0,1);
 }
 .contact-form input::placeholder,
 .contact-form textarea::placeholder {
@@ -439,7 +450,6 @@ button { background: none; border: 0; color: inherit; font: inherit; cursor: poi
   text-transform: uppercase;
   letter-spacing: 0.12em;
   font-size: 0.72rem;
-  text-shadow: 3px 3px 0 rgba(0,0,0,1), 2px 2px 0 rgba(0,0,0,1), 1px 1px 0 rgba(0,0,0,1);
 }
 .contact-form input:focus,
 .contact-form textarea:focus {
@@ -469,6 +479,7 @@ button { background: none; border: 0; color: inherit; font: inherit; cursor: poi
   letter-spacing: 0.01em;
   display: inline-flex; align-items: center; gap: .7rem;
   align-self: flex-start;
+  text-shadow: 3px 3px 0 rgba(0,0,0,1), 2px 2px 0 rgba(0,0,0,1), 1px 1px 0 rgba(0,0,0,1);
   text-shadow: 3px 3px 0 rgba(0,0,0,1), 2px 2px 0 rgba(0,0,0,1), 1px 1px 0 rgba(0,0,0,1);
 }
 .contact-mail span { transition: transform .4s var(--ease); }
@@ -608,6 +619,11 @@ button { background: none; border: 0; color: inherit; font: inherit; cursor: poi
   border-color: rgba(255,255,255,0.4);
 }
 #previewBtn {
+  padding: 1.2rem 2.7rem;
+  font-size: 1.5rem;
+  letter-spacing: 0.18em;
+}
+#previewBtn {
   padding: 0.6rem 1.4rem;
   font-size: 0.85rem;
   letter-spacing: 0.14em;
@@ -622,6 +638,38 @@ body.subpage { overflow: auto; }
 body.subpage .subpage-bg {
   position: fixed; inset: 0; z-index: 0;
   background: radial-gradient(circle at 50% 30%, #0a0a14, #000);
+}
+
+/* Return to top button */
+.return-top {
+  position: fixed;
+  bottom: 5rem;
+  right: 2rem;
+  z-index: 100;
+  width: 3.5rem;
+  height: 3.5rem;
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(8px);
+  color: var(--ink);
+  font-size: 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .3s var(--ease), background .3s var(--ease), border-color .3s var(--ease), transform .3s var(--ease);
+}
+.return-top.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+.return-top:hover {
+  background: rgba(255,255,255,0.2);
+  border-color: rgba(255,255,255,0.6);
+  transform: translateY(-3px);
 }
 
 /* Return to top button */
@@ -704,6 +752,17 @@ body.subpage .footer {
   width: 100%; height: 100%;
   border: none; pointer-events: none;
   opacity: 0.5;
+}
+.subpage-hero .hero-particles {
+  position: absolute; inset: 0; z-index: 0;
+  width: 100%; height: 100%;
+  border: none; pointer-events: none;
+  opacity: 0.5;
+}
+.subpage-hero .subpage-eyebrow,
+.subpage-hero .subpage-title,
+.subpage-hero .subpage-subtitle {
+  position: relative; z-index: 2;
 }
 .subpage-hero .hero-particles {
   position: absolute; inset: 0; z-index: 0;

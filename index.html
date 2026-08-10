@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=65" />
+<link rel="stylesheet" href="styles.css?v=59" />
 </head>
 <body class="page-home">
 
@@ -192,11 +192,28 @@
       <div class="slide-body contact-body">
         <p class="lede">We take on a handful of projects each year. If you've got something ambitious, we'd love to hear about it.</p>
         <a href="#form" class="cta" data-go="form">Start a Conversation <span>→</span></a>
+        <a href="#form" class="cta" data-go="form">Start a Conversation <span>→</span></a>
         <a href="mailto:studio@monolith.creative" class="contact-mail">studio@monolith.creative <span>→</span></a>
         <div class="socials">
           <a href="#">Instagram</a><a href="#">Behance</a><a href="#">Vimeo</a><a href="#">LinkedIn</a>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- SLIDE — FORM: Contact form with particle-formed fields -->
+  <section class="slide" id="form" data-slide="11" data-shape="form">
+    <div class="slide-inner form-slide-inner">
+      <p class="eyebrow">07 — Let's Talk</p>
+      <form class="contact-form" id="contactForm">
+        <div class="form-row">
+          <input type="text" name="name" placeholder="Your name" required>
+          <input type="email" name="email" placeholder="Your email" required>
+        </div>
+        <input type="text" name="subject" placeholder="Project / subject">
+        <textarea name="message" placeholder="Tell us about your project" rows="4" required></textarea>
+        <button type="submit" class="cta">Send Message <span>→</span></button>
+      </form>
     </div>
   </section>
 
@@ -230,7 +247,6 @@
     <a href="#hero" data-go="hero">Home</a>
     <a href="#disciplines" data-go="disciplines">What</a>
     <a href="#work" data-go="work">Works</a>
-    <a href="studio.html">Studio</a>
     <a href="#process" data-go="process">How</a>
     <a href="#contact" data-go="contact">Let's Build</a>
     <a href="#form" data-go="form">Contact Us</a>
@@ -249,6 +265,6 @@
 <button class="return-top" id="returnTop" aria-label="Return to top">↑</button>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="script.js?v=103"></script>
+<script src="script.js?v=108"></script>
 </body>
 </html>
