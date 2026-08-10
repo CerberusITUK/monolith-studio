@@ -54,12 +54,12 @@
   }
 
   var thumbFiles = {
-    lumen:      "thumbs/lumen.png",
-    strata:     "thumbs/strata.png",
-    wavelength: "thumbs/wavelength.png",
-    latitude:   "thumbs/latitude.png",
-    threadwork: "thumbs/threadwork.png",
-    pulse:      "thumbs/pulse.png",
+    lumen:      "thumbs/lumen.webp",
+    strata:     "thumbs/strata.webp",
+    wavelength: "thumbs/wavelength.webp",
+    latitude:   "thumbs/latitude.webp",
+    threadwork: "thumbs/threadwork.webp",
+    pulse:      "thumbs/pulse.webp",
   };
 
   function loadThumbs(callback) {
