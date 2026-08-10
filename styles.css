@@ -40,9 +40,18 @@ body, .nav, .menu-overlay, .footer, .subpage-hero, .work-grid,
   --line: rgba(255,255,255,0.12);
   --ease: cubic-bezier(0.76, 0, 0.24, 1);
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --font-display: "Roboto Condensed", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-display: "Roboto Condensed", "Roboto Condensed Fallback", "Helvetica Neue", Helvetica, Arial, sans-serif;
   --font-body: "Helvetica Neue", Helvetica, Arial, sans-serif;
   --pad: clamp(1.25rem, 5vw, 5rem);
+}
+
+@font-face {
+  font-family: "Roboto Condensed Fallback";
+  src: local("Helvetica Neue") local("Arial");
+  size-adjust: 92%;
+  ascent-override: 95%;
+  descent-override: 22%;
+  line-gap-override: 0%;
 }
 
 html, body { height: 100%; }
