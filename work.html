@@ -7,11 +7,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=41" />
+<link rel="stylesheet" href="styles.css?v=77" />
 </head>
 <body class="subpage">
 
 <div class="subpage-bg"></div>
+<iframe class="page-particles-iframe" src="index.html?embed=1#work" frameborder="0" scrolling="no" aria-hidden="true"></iframe>
 <div class="grain" aria-hidden="true"></div>
 
 <header class="nav">
@@ -19,17 +20,33 @@
     <span class="logo-mark">◆</span>
     <span>MONOLITH</span>
   </a>
-  <div class="nav-links">
-    <a href="work.html">Work</a>
-    <a href="studio.html">Studio</a>
-    <a href="index.html#4">Contact</a>
-    <a href="index.html" class="nav-back"><span>←</span> Home</a>
-  </div>
+  <button class="menu-btn" id="menuBtn" aria-label="Open menu">
+    <span>Menu</span>
+    <span class="menu-bars"><i></i><i></i></span>
+  </button>
 </header>
+
+<a href="index.html" class="home-btn" title="Back to home">← Home</a>
+
+<!-- Menu overlay -->
+<div class="menu-overlay" id="menuOverlay" aria-hidden="true">
+  <nav class="menu-nav">
+    <a href="index.html#hero">Home</a>
+    <a href="index.html#disciplines">What</a>
+    <a href="index.html#work">Works</a>
+    <a href="studio.html">Studio</a>
+    <a href="index.html#process">How</a>
+    <a href="index.html#contact">Let's Build</a>
+    <a href="index.html#form">Contact Us</a>
+  </nav>
+  <div class="menu-foot">
+    <span>studio@monolith.creative</span>
+    <span>© 2026 Monolith Studio</span>
+  </div>
+</div>
 
 <main>
   <section class="subpage-hero">
-    <div class="hero-canvas"></div>
     <p class="subpage-eyebrow sr">Archive · 2017–2025</p>
     <h1 class="subpage-title sr">Selected<br/>Work</h1>
     <p class="subpage-subtitle sr">Six worlds we built from scratch — across film, identity, motion, and interactive. Click any project to dive in.</p>
@@ -133,6 +150,33 @@
   <span>studio@monolith.creative</span>
 </footer>
 
+<button class="return-top" id="returnTop" aria-label="Return to top">↑</button>
+<script>
+// Menu toggle
+(function() {
+  var menuBtn = document.getElementById('menuBtn');
+  var menuOverlay = document.getElementById('menuOverlay');
+  var menuOpen = false;
+  function openMenu() { menuOpen = true; menuBtn.classList.add('open'); menuOverlay.classList.add('open'); menuOverlay.setAttribute('aria-hidden', 'false'); }
+  function closeMenu() { menuOpen = false; menuBtn.classList.remove('open'); menuOverlay.classList.remove('open'); menuOverlay.setAttribute('aria-hidden', 'true'); }
+  menuBtn.addEventListener('click', function() { menuOpen ? closeMenu() : openMenu(); });
+  menuOverlay.addEventListener('click', function(e) { if (e.target === menuOverlay) closeMenu(); });
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeMenu(); });
+})();
+// Return to top
+(function() {
+  var btn = document.getElementById('returnTop');
+  window.addEventListener('scroll', function() {
+    if (window.scrollY > 300) btn.classList.add('visible');
+    else btn.classList.remove('visible');
+  });
+  btn.addEventListener('click', function() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+})();
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="project.js"></script>
 <script>
 // Reveal animations
@@ -148,7 +192,7 @@ document.querySelectorAll(".work-item[data-project]").forEach(item => {
     if (!iframe) {
       iframe = document.createElement("iframe");
       iframe.className = "thumb-iframe";
-      iframe.src = item.getAttribute("href");
+      iframe.src = item.getAttribute("href") + (item.getAttribute("href").indexOf('?') !== -1 ? '&' : '?') + "from=work";
       iframe.tabIndex = -1;
       item.querySelector(".work-thumb").appendChild(iframe);
     }

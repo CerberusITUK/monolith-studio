@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=41" />
+<link rel="stylesheet" href="styles.css?v=65" />
 </head>
 <body class="page-home">
 
@@ -89,7 +89,7 @@
             <button class="crl-next" aria-label="Next">next</button>
           </div>
         </div>
-        <a href="#process" class="cta" data-go="process">Our Process <span>→</span></a>
+        <a href="studio.html" class="cta">Our Process <span>→</span></a>
       </div>
     </div>
   </section>
@@ -114,42 +114,42 @@
     <a href="project.html?id=lumen#lumen" class="project-preview-link">
       <div class="project-preview-overlay"></div>
       <iframe data-src="project.html?id=lumen#lumen" class="project-preview-iframe" tabindex="-1"></iframe>
-      <div class="project-preview-label">Lumen <span>→</span><span class="project-preview-btn">Preview</span></div>
+      <div class="project-preview-label">Lumen <span>→</span></div>
     </a>
   </section>
   <section class="slide project-preview" id="strata" data-slide="3.2" data-shape="wall" data-project="strata">
     <a href="project.html?id=strata#strata" class="project-preview-link">
       <div class="project-preview-overlay"></div>
       <iframe data-src="project.html?id=strata#strata" class="project-preview-iframe" tabindex="-1"></iframe>
-      <div class="project-preview-label">Strata <span>→</span><span class="project-preview-btn">Preview</span></div>
+      <div class="project-preview-label">Strata <span>→</span></div>
     </a>
   </section>
   <section class="slide project-preview" id="wavelength" data-slide="3.3" data-shape="wall" data-project="wavelength">
     <a href="project.html?id=wavelength#wavelength" class="project-preview-link">
       <div class="project-preview-overlay"></div>
       <iframe data-src="project.html?id=wavelength#wavelength" class="project-preview-iframe" tabindex="-1"></iframe>
-      <div class="project-preview-label">Wavelength <span>→</span><span class="project-preview-btn">Preview</span></div>
+      <div class="project-preview-label">Wavelength <span>→</span></div>
     </a>
   </section>
   <section class="slide project-preview" id="latitude" data-slide="3.4" data-shape="wall" data-project="latitude">
     <a href="project.html?id=latitude#latitude" class="project-preview-link">
       <div class="project-preview-overlay"></div>
       <iframe data-src="project.html?id=latitude#latitude" class="project-preview-iframe" tabindex="-1"></iframe>
-      <div class="project-preview-label">Latitude <span>→</span><span class="project-preview-btn">Preview</span></div>
+      <div class="project-preview-label">Latitude <span>→</span></div>
     </a>
   </section>
   <section class="slide project-preview" id="threadwork" data-slide="3.5" data-shape="wall" data-project="threadwork">
     <a href="project.html?id=threadwork#threadwork" class="project-preview-link">
       <div class="project-preview-overlay"></div>
       <iframe data-src="project.html?id=threadwork#threadwork" class="project-preview-iframe" tabindex="-1"></iframe>
-      <div class="project-preview-label">Threadwork <span>→</span><span class="project-preview-btn">Preview</span></div>
+      <div class="project-preview-label">Threadwork <span>→</span></div>
     </a>
   </section>
   <section class="slide project-preview" id="pulse" data-slide="3.6" data-shape="wall" data-project="pulse">
     <a href="project.html?id=pulse#pulse" class="project-preview-link">
       <div class="project-preview-overlay"></div>
       <iframe data-src="project.html?id=pulse#pulse" class="project-preview-iframe" tabindex="-1"></iframe>
-      <div class="project-preview-label">Pulse <span>→</span><span class="project-preview-btn">Preview</span></div>
+      <div class="project-preview-label">Pulse <span>→</span></div>
     </a>
   </section>
 
@@ -191,11 +191,28 @@
       </h1>
       <div class="slide-body contact-body">
         <p class="lede">We take on a handful of projects each year. If you've got something ambitious, we'd love to hear about it.</p>
+        <a href="#form" class="cta" data-go="form">Start a Conversation <span>→</span></a>
         <a href="mailto:studio@monolith.creative" class="contact-mail">studio@monolith.creative <span>→</span></a>
         <div class="socials">
           <a href="#">Instagram</a><a href="#">Behance</a><a href="#">Vimeo</a><a href="#">LinkedIn</a>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- SLIDE — FORM: Contact form with particle-formed fields -->
+  <section class="slide" id="form" data-slide="11" data-shape="form">
+    <div class="slide-inner form-slide-inner">
+      <p class="eyebrow">07 — Let's Talk</p>
+      <form class="contact-form" id="contactForm">
+        <div class="form-row">
+          <input type="text" name="name" placeholder="Your name" required>
+          <input type="email" name="email" placeholder="Your email" required>
+        </div>
+        <input type="text" name="subject" placeholder="Project / subject">
+        <textarea name="message" placeholder="Tell us about your project" rows="4" required></textarea>
+        <button type="submit" class="cta">Send Message <span>→</span></button>
+      </form>
     </div>
   </section>
 
@@ -210,10 +227,13 @@
 <!-- Menu overlay -->
 <div class="menu-overlay" id="menuOverlay" aria-hidden="true">
   <nav class="menu-nav">
-    <a href="index.html">Home</a>
-    <a href="work.html">Work</a>
+    <a href="#hero" data-go="hero">Home</a>
+    <a href="#disciplines" data-go="disciplines">What</a>
+    <a href="#work" data-go="work">Works</a>
     <a href="studio.html">Studio</a>
-    <a href="#4" data-go="4">Contact</a>
+    <a href="#process" data-go="process">How</a>
+    <a href="#contact" data-go="contact">Let's Build</a>
+    <a href="#form" data-go="form">Contact Us</a>
   </nav>
   <div class="menu-foot">
     <span>studio@monolith.creative</span>
@@ -226,7 +246,9 @@
   <span>Built in the dark</span>
 </footer>
 
+<button class="return-top" id="returnTop" aria-label="Return to top">↑</button>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="script.js?v=72"></script>
+<script src="script.js?v=103"></script>
 </body>
 </html>

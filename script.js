@@ -5,11 +5,17 @@
    ========================================================= */
 (() => {
   const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const isEmbed = new URLSearchParams(location.search).get("embed") === "1";
+
+  if (isEmbed) {
+    // Hide all UI elements, only show the particle background
+    document.documentElement.classList.add("embed-mode");
+  }
 
   /* ---------------- Three.js morphing particle scene ---------------- */
   let scene, camera, renderer, points, wire, bokehPoints, bokehMat, pointsMat;
   let targetSize = 0.04;
-  const COUNT = 60000;
+  const COUNT = isEmbed ? 10000 : 40000;
   const positions = new Float32Array(COUNT * 3);
   const colors = new Float32Array(COUNT * 3);
   const targets = {};      // shape -> { pos: Float32Array, col: Float32Array }
@@ -352,6 +358,137 @@
       buildOrder: crystalBuildOrder,
       dynamic: true,
     };
+
+    // 6. FORM — particles arrange to outline a contact form
+    // Fields: name+email row, subject, message textarea, send button
+    const formPos = new Float32Array(COUNT * 3);
+    const formCol = new Float32Array(COUNT * 3);
+    // Form field rectangles: [x0, y0, x1, y1] in 3D space
+    const formFields = [
+      [-2.5, 1.4, -0.05, 2.0],   // name
+      [0.05, 1.4, 2.5, 2.0],      // email
+      [-2.5, 0.6, 2.5, 1.2],      // subject
+      [-2.5, -0.9, 2.5, 0.4],     // message textarea
+      [-2.5, -1.7, -0.3, -1.1],   // send button
+    ];
+    // Calculate total border length for proportional distribution
+    var totalBorder = 0;
+    for (var fi = 0; fi < formFields.length; fi++) {
+      var f = formFields[fi];
+      totalBorder += 2 * ((f[2]-f[0]) + (f[3]-f[1]));
+    }
+    // Add fill for button (make it more solid)
+    var btnW = formFields[4][2] - formFields[4][0];
+    var btnH = formFields[4][3] - formFields[4][1];
+    var btnArea = btnW * btnH;
+    var fillCount = Math.floor(COUNT * 0.15); // 15% fill particles
+    var borderCount = COUNT - fillCount;
+    var particleIdx = 0;
+    // Form color: soft violet/white
+    var formR = 0.7, formG = 0.65, formB = 1.0;
+    // Distribute border particles
+    for (var fi = 0; fi < formFields.length; fi++) {
+      var f = formFields[fi];
+      var w = f[2] - f[0];
+      var h = f[3] - f[1];
+      var perim = 2 * (w + h);
+      var fieldCount = Math.floor((perim / totalBorder) * borderCount);
+      for (var p = 0; p < fieldCount && particleIdx < borderCount; p++) {
+        var t = (p / fieldCount) * perim;
+        var px, py;
+        if (t < w) { px = f[0] + t; py = f[1]; }
+        else if (t < w + h) { px = f[2]; py = f[1] + (t - w); }
+        else if (t < 2*w + h) { px = f[2] - (t - w - h); py = f[3]; }
+        else { px = f[0]; py = f[3] - (t - 2*w - h); }
+        formPos[particleIdx*3]   = px + (Math.random() - 0.5) * 0.04;
+        formPos[particleIdx*3+1] = py + (Math.random() - 0.5) * 0.04;
+        formPos[particleIdx*3+2] = (Math.random() - 0.5) * 0.15;
+        var brightness = 0.4 + Math.random() * 0.4;
+        formCol[particleIdx*3]   = formR * brightness;
+        formCol[particleIdx*3+1] = formG * brightness;
+        formCol[particleIdx*3+2] = formB * brightness;
+        particleIdx++;
+      }
+    }
+    // Fill remaining with button fill particles
+    for (var p = particleIdx; p < COUNT; p++) {
+      formPos[p*3]   = formFields[4][0] + Math.random() * btnW;
+      formPos[p*3+1] = formFields[4][1] + Math.random() * btnH;
+      formPos[p*3+2] = (Math.random() - 0.5) * 0.1;
+      var brightness = 0.3 + Math.random() * 0.3;
+      formCol[p*3]   = formR * brightness;
+      formCol[p*3+1] = formG * brightness;
+      formCol[p*3+2] = formB * brightness;
+    }
+    targets.form = {
+      pos: formPos,
+      col: formCol,
+      dynamic: false,
+    };
+    slideBgColors.form = [0.08, 0.04, 0.14];
+
+    // 7. ENVELOPE — for send animation
+    const envPos = new Float32Array(COUNT * 3);
+    const envCol = new Float32Array(COUNT * 3);
+    // Envelope: rectangle body + triangular flap, all particles interleaved
+    const envW = 3.0, envH = 1.8;
+    var envPerim = 2 * (envW + envH);
+    // Pre-compute all envelope positions then shuffle so button-fill indices spread evenly
+    var envPositions = [];
+    // Border particles (40% of total)
+    var envBorderCount = Math.floor(COUNT * 0.4);
+    for (var p = 0; p < envBorderCount; p++) {
+      var t = (p / envBorderCount) * envPerim;
+      var px, py;
+      if (t < envW) { px = -envW/2 + t; py = -envH/2; }
+      else if (t < envW + envH) { px = envW/2; py = -envH/2 + (t - envW); }
+      else if (t < 2*envW + envH) { px = envW/2 - (t - envW - envH); py = envH/2; }
+      else { px = -envW/2; py = envH/2 - (t - 2*envW - envH); }
+      envPositions.push([px + (Math.random() - 0.5) * 0.04, py + (Math.random() - 0.5) * 0.04, 0]);
+    }
+    // Flap lines (20% of total)
+    var envFlapCount = Math.floor(COUNT * 0.2);
+    for (var p = 0; p < envFlapCount; p++) {
+      var u = p / envFlapCount;
+      var side = p % 2;
+      var px, py;
+      if (side === 0) {
+        px = -envW/2 + u * (envW/2);
+        py = envH/2 - u * (envH * 0.7);
+      } else {
+        px = envW/2 - u * (envW/2);
+        py = envH/2 - u * (envH * 0.7);
+      }
+      envPositions.push([px + (Math.random() - 0.5) * 0.04, py + (Math.random() - 0.5) * 0.04, 0.02]);
+    }
+    // Body fill (remaining)
+    var envFillCount = COUNT - envPositions.length;
+    for (var p = 0; p < envFillCount; p++) {
+      envPositions.push([
+        -envW/2 + Math.random() * envW,
+        -envH/2 + Math.random() * envH,
+        -0.02 + (Math.random() - 0.5) * 0.05
+      ]);
+    }
+    // Shuffle so old button-fill particle indices spread across all envelope parts
+    for (var i = envPositions.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = envPositions[i]; envPositions[i] = envPositions[j]; envPositions[j] = tmp;
+    }
+    for (var i = 0; i < COUNT; i++) {
+      envPos[i*3]   = envPositions[i][0];
+      envPos[i*3+1] = envPositions[i][1];
+      envPos[i*3+2] = envPositions[i][2];
+      var br = 0.3 + Math.random() * 0.4;
+      envCol[i*3]   = 0.8 * br;
+      envCol[i*3+1] = 0.75 * br;
+      envCol[i*3+2] = 1.0 * br;
+    }
+    targets.envelope = {
+      pos: envPos,
+      col: envCol,
+      dynamic: false,
+    };
   }
 
   function initThree() {
@@ -362,7 +499,7 @@
     camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 100);
     camera.position.set(0, 0, 7);
 
-    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, premultipliedAlpha: false, powerPreference: "high-performance" });
     renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
     renderer.setSize(innerWidth, innerHeight);
     renderer.setClearColor(0x000000, 1);
@@ -413,16 +550,18 @@
       points = new THREE.Points(geo, pointsMat);
       scene.add(points);
 
-      // subtle wireframe for depth
-      const wgeo = new THREE.IcosahedronGeometry(3.6, 1);
-      const wmat = new THREE.MeshBasicMaterial({
-        color: 0x4466ff, wireframe: true, transparent: true, opacity: 0.06,
-      });
-      wire = new THREE.Mesh(wgeo, wmat);
-      scene.add(wire);
+      // subtle wireframe for depth (skip in embed mode for performance)
+      if (!isEmbed) {
+        const wgeo = new THREE.IcosahedronGeometry(3.6, 1);
+        const wmat = new THREE.MeshBasicMaterial({
+          color: 0x4466ff, wireframe: true, transparent: true, opacity: 0.06,
+        });
+        wire = new THREE.Mesh(wgeo, wmat);
+        scene.add(wire);
+      }
 
       // ---- Bokeh: floating out-of-focus light circles ----
-      var bokehCount = 60;
+      var bokehCount = isEmbed ? 30 : 60;
       var bokehGeo = new THREE.BufferGeometry();
       var bokehPos = [];
       var bokehCol = [];
@@ -516,6 +655,10 @@
   }
 
   let wallIntro = 0;  // 0=just arrived, lerps to 1 over time
+  let formSent = false;  // true when form submitted, triggers envelope morph
+  let formFlyOff = false;  // true when envelope should zoom off screen
+  let envSpin = 0;  // envelope spin angle, eases to 0 (face-on)
+  let envFormed = false;  // true when envelope particles have settled
 
   function morphTo(shape) {
     if (!targets[shape]) return;
@@ -547,10 +690,21 @@
     }
   }
 
+  let renderPaused = false;
+
+  // Pause rendering when off-screen (important for embed/iframe mode)
+  if (isEmbed && typeof IntersectionObserver !== "undefined") {
+    var visObs = new IntersectionObserver(function (entries) {
+      renderPaused = !entries[0].isIntersecting;
+    }, { threshold: 0 });
+    visObs.observe(document.documentElement);
+  }
+
   function animate() {
     requestAnimationFrame(animate);
+    if (renderPaused) return;
     clock += 0.005;
-    // Skip heavy particle updates on project preview slides
+    // Update particles on all slides (faded on preview via opacity)
     var isPreview = slides[current] && slides[current].classList.contains("project-preview");
     if (points && !isPreview) {
       const tgt = targets[currentShape];
@@ -604,11 +758,27 @@
           const bright = p < 0.7
             ? 0.2 + (p / 0.7) * 0.8
             : 1.0 - ((p - 0.7) / 0.3) * 0.7;
-          const sIdx = Math.min(Math.floor(i / perStream), 5);
-          const tint = tints[sIdx];
-          colors[i3]   += (tint[0] * bright - colors[i3])   * 0.1;
-          colors[i3+1] += (tint[1] * bright - colors[i3+1]) * 0.1;
-          colors[i3+2] += (tint[2] * bright - colors[i3+2]) * 0.1;
+          // In orbit phase, cycle through hues for swirling color effect
+          var sIdx = Math.min(Math.floor(i / perStream), 5);
+          if (p >= 0.7) {
+            // Blend between adjacent stream colors based on orbit angle
+            const orbitU = (p - 0.7) / 0.3;
+            const colorMix = (Math.sin(orbitU * Math.PI * 4 + i * 0.1) + 1) * 0.5;
+            const nextIdx = (sIdx + 1) % 6;
+            const t1 = tints[sIdx];
+            const t2 = tints[nextIdx];
+            var r = t1[0] * (1 - colorMix) + t2[0] * colorMix;
+            var g = t1[1] * (1 - colorMix) + t2[1] * colorMix;
+            var b = t1[2] * (1 - colorMix) + t2[2] * colorMix;
+          } else {
+            var tint = tints[sIdx];
+            var r = tint[0];
+            var g = tint[1];
+            var b = tint[2];
+          }
+          colors[i3]   += (r * bright - colors[i3])   * 0.1;
+          colors[i3+1] += (g * bright - colors[i3+1]) * 0.1;
+          colors[i3+2] += (b * bright - colors[i3+2]) * 0.1;
         }
       } else if (tgt.dynamic) {
         // ---- CRYSTAL: continuous build cycle ----
@@ -657,6 +827,18 @@
           positions[i] += (tgtPos[i] - positions[i]) * lerp;
           colors[i] += (tgtCol[i] - colors[i]) * lerp;
         }
+        // Check if envelope is fully formed (sample a subset of particles)
+        if (formSent && !envFormed && currentShape === "envelope") {
+          var settled = 0;
+          for (var si = 0; si < 200; si++) {
+            var sIdx = Math.floor(Math.random() * COUNT) * 3;
+            var dx = positions[sIdx] - tgtPos[sIdx];
+            var dy = positions[sIdx+1] - tgtPos[sIdx+1];
+            var dz = positions[sIdx+2] - tgtPos[sIdx+2];
+            if (dx*dx + dy*dy + dz*dz < 0.01) settled++;
+          }
+          if (settled > 190) envFormed = true;
+        }
       }
 
       points.geometry.attributes.position.needsUpdate = true;
@@ -667,21 +849,53 @@
       rotX += (mouseY * 0.3 - rotX) * 0.04;
       var isProjectPreview = slides[current] && slides[current].classList.contains("project-preview");
       if (currentShape === "wall" && !isProjectPreview) {
-        wallIntro += (1 - wallIntro) * 0.002;  // very slowly blend to full motion
+        wallIntro += (0.3 - wallIntro) * 0.002;  // cap at 0.3 for slower max speed
         var wallRotY = clock * wallIntro + rotY;
         var wallRotX = Math.sin(clock * 0.5) * 0.12 * wallIntro + rotX;
         points.rotation.y = wallRotY;
         points.rotation.x = wallRotX;
         targetSize = 0.08;
       } else if (currentShape === "wall" && isProjectPreview) {
-        // Keep particles still on project preview slides
-        points.rotation.y = rotY;
-        points.rotation.x = rotX;
+        // Slow gentle rotation on project preview slides
+        points.rotation.y = clock * 0.15 + rotY;
+        points.rotation.x = Math.sin(clock * 0.5) * 0.08 + rotX;
         targetSize = 0.08;
       } else {
-        points.rotation.y = clock + rotY;
+        points.rotation.y = clock * 0.5 + rotY;
         points.rotation.x = Math.sin(clock * 0.5) * 0.12 + rotX;
         targetSize = 0.04;
+      }
+      // Envelope: spin to face-on, then keep gentle rotation
+      if (formSent) {
+        envSpin += (0 - envSpin) * 0.04;
+        points.rotation.y = envSpin + rotY;
+        points.rotation.x = envSpin * 0.3 + rotX;
+        targetSize = 0.03;
+      }
+      // Handle form/envelope states
+      var formFocused = contactForm && contactForm.classList.contains("focused");
+      if (formSent && formFlyOff) {
+        // Zoom envelope off screen (up and away)
+        points.position.y += (15 - points.position.y) * 0.03;
+        points.position.z += (-8 - points.position.z) * 0.03;
+        pointsMat.opacity += (0 - pointsMat.opacity) * 0.02;
+      } else if (formSent) {
+        // Envelope formed, stays in place
+        points.position.z += (0 - points.position.z) * 0.04;
+        points.position.y += (0 - points.position.y) * 0.04;
+        pointsMat.opacity += (1.0 - pointsMat.opacity) * 0.04;
+      } else if (currentShape === "form" && formFocused) {
+        points.position.z += (-6 - points.position.z) * 0.04;
+        points.position.y += (3 - points.position.y) * 0.04;
+        pointsMat.opacity += (0.3 - pointsMat.opacity) * 0.04;
+      } else if (currentShape === "form") {
+        points.position.z += (0 - points.position.z) * 0.04;
+        points.position.y += (0 - points.position.y) * 0.04;
+        pointsMat.opacity += (1.0 - pointsMat.opacity) * 0.04;
+      } else {
+        points.position.z += (0 - points.position.z) * 0.04;
+        points.position.y += (0 - points.position.y) * 0.04;
+        if (!isPreview) pointsMat.opacity += (1.0 - pointsMat.opacity) * 0.04;
       }
       // smoothly lerp particle size
       pointsMat.size += (targetSize - pointsMat.size) * 0.05;
@@ -696,11 +910,17 @@
 
     // Always update background color + render, even on preview slides
     if (renderer) {
-      // Hide 3D particles + wire on preview slides, keep bokeh
-      if (points) points.visible = !isPreview;
-      if (wire) wire.visible = !isPreview;
-      // Update bokeh always
-      if (bokehMat) bokehMat.uniforms.uTime.value = clock;
+      // Fade 3D particles + wire on preview slides, keep bokeh
+      if (points) {
+        points.visible = true;
+        pointsMat.opacity = isPreview ? 0.15 : 1.0;
+      }
+      if (wire) {
+        wire.visible = true;
+        wire.material.opacity = isPreview ? 0.02 : 0.06;
+      }
+      // Update bokeh only when not on preview (frozen static on preview)
+      if (bokehMat && !isPreview) bokehMat.uniforms.uTime.value = clock;
 
       currentBg[0] += (targetBg[0] - currentBg[0]) * 0.03;
       currentBg[1] += (targetBg[1] - currentBg[1]) * 0.03;
@@ -783,6 +1003,7 @@
     } else {
       slides[index].classList.add("active");
     }
+    const oldIndex = current;
     current = index;
     railFill.style.height = (index / (N - 1)) * 100 + "%";
     [...railDots.children].forEach((d, i) =>
@@ -790,8 +1011,34 @@
     );
     const shape = slides[index].dataset.shape;
     if (shape) morphTo(shape);
+    // Reset form state when leaving the form slide
+    if (slides[oldIndex] && slides[oldIndex].id === "form" && oldIndex !== index && formSent) {
+      formSent = false;
+      formFlyOff = false;
+      envFormed = false;
+      envSpin = 0;
+      if (contactForm) {
+        contactForm.style.opacity = "";
+        contactForm.style.transition = "";
+        contactForm.style.pointerEvents = "";
+        contactForm.reset();
+        contactForm.classList.remove("focused");
+      }
+      // Remove success message if present
+      var oldMsg = document.querySelector(".form-success");
+      if (oldMsg) oldMsg.remove();
+      // Reset particle positions
+      points.position.y = 0;
+      points.position.z = 0;
+    }
     if (index > 0) scrollHint.classList.add("hidden");
     else scrollHint.classList.remove("hidden");
+    // Show return-to-top button when not on first slide
+    var returnTopBtn = document.getElementById("returnTop");
+    if (returnTopBtn) {
+      if (index > 0) returnTopBtn.classList.add("visible");
+      else returnTopBtn.classList.remove("visible");
+    }
     setTimeout(() => { locked = false; }, 950);
   }
 
@@ -875,6 +1122,81 @@
     }
   });
 
+  // Contact form — submit via fetch, morph to envelope and zoom off
+  var contactForm = document.getElementById("contactForm");
+  if (contactForm) {
+    // Toggle focused state when any input/textarea is focused
+    contactForm.addEventListener("focusin", function() {
+      contactForm.classList.add("focused");
+    });
+    contactForm.addEventListener("focusout", function() {
+      if (!contactForm.contains(document.activeElement) || document.activeElement === contactForm) {
+        contactForm.classList.remove("focused");
+      }
+    });
+    contactForm.addEventListener("submit", function(e) {
+      e.preventDefault();
+      if (formSent) return;
+      // Morph particles to envelope shape (stays in place, spins to face-on)
+      morphTo("envelope");
+      formSent = true;
+      envFormed = false;
+      envSpin = Math.PI * 0.8;  // start rotated, will ease to 0
+      // Hide form fields
+      contactForm.style.opacity = "0";
+      contactForm.style.transition = "opacity 0.6s ease";
+      contactForm.style.pointerEvents = "none";
+      // Submit data via fetch (Formsubmit.co — no backend needed)
+      var formData = new FormData(contactForm);
+      formData.append("_subject", "New project enquiry — Monolith Studio");
+      fetch("https://formsubmit.co/ajax/studio@monolith.creative", {
+        method: "POST",
+        headers: { "Accept": "application/json" },
+        body: formData
+      }).catch(function(err) {
+        console.error("Form submit error:", err);
+      });
+      // After envelope is fully formed, wait 2s then fly off
+      function checkEnvFormed() {
+        if (envFormed) {
+          setTimeout(function() {
+            formFlyOff = true;
+            // Show thanks message 1s after fly-off starts
+            setTimeout(function() {
+              var slide = document.getElementById("form");
+              if (slide) {
+                var inner = slide.querySelector(".slide-inner");
+                var eyebrow = inner.querySelector(".eyebrow");
+                var msg = document.createElement("p");
+                msg.className = "lede form-success";
+                msg.textContent = "Thanks — we'll be in touch soon.";
+                msg.style.cssText = "text-align:center;opacity:0;transition:opacity 1s ease;margin-top:0.5rem;align-self:center;";
+                if (eyebrow && eyebrow.nextSibling) {
+                  inner.insertBefore(msg, eyebrow.nextSibling);
+                } else {
+                  inner.appendChild(msg);
+                }
+                requestAnimationFrame(function() { msg.style.opacity = "1"; });
+                // Add Home button below the thanks message
+                var homeBtn = document.createElement("a");
+                homeBtn.href = "#hero";
+                homeBtn.className = "cta form-home-btn";
+                homeBtn.setAttribute("data-go", "hero");
+                homeBtn.innerHTML = "Home <span>→</span>";
+                homeBtn.style.cssText = "opacity:0;transition:opacity 1s ease 0.5s;margin-top:1.5rem;align-self:center;";
+                inner.appendChild(homeBtn);
+                requestAnimationFrame(function() { homeBtn.style.opacity = "1"; });
+              }
+            }, 1000);
+          }, 2000);
+        } else {
+          setTimeout(checkEnvFormed, 200);
+        }
+      }
+      setTimeout(checkEnvFormed, 500);
+    });
+  }
+
   // Check hash first — if deep-linking, jump directly without showing slide 0
   var hashName = location.hash.replace("#", "");
   var hashIndex = -1;
@@ -893,6 +1215,8 @@
     );
     var initialShape = slides[hashIndex].dataset.shape;
     if (hashIndex > 0) scrollHint.classList.add("hidden");
+    var rtBtn = document.getElementById("returnTop");
+    if (rtBtn && hashIndex > 0) rtBtn.classList.add("visible");
   } else {
     slides[0].classList.add("active");
     railFill.style.height = "0%";
@@ -905,5 +1229,11 @@
   function openMenu() { menuOpen = true; menuBtn.classList.add("open"); menuOverlay.classList.add("open"); menuOverlay.setAttribute("aria-hidden", "false"); }
   function closeMenu() { menuOpen = false; menuBtn.classList.remove("open"); menuOverlay.classList.remove("open"); menuOverlay.setAttribute("aria-hidden", "true"); }
   menuBtn.addEventListener("click", () => menuOpen ? closeMenu() : openMenu());
+
+  // Return to top button — go to first slide
+  var returnTopBtn = document.getElementById("returnTop");
+  if (returnTopBtn) {
+    returnTopBtn.addEventListener("click", function() { goTo(0); });
+  }
 
 })();

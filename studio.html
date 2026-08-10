@@ -7,11 +7,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="styles.css?v=71" />
 </head>
 <body class="subpage">
 
 <div class="subpage-bg"></div>
+<div class="hero-canvas page-bg-canvas" id="heroCanvas"></div>
 <div class="grain" aria-hidden="true"></div>
 
 <header class="nav">
@@ -19,17 +20,31 @@
     <span class="logo-mark">◆</span>
     <span>MONOLITH</span>
   </a>
-  <div class="nav-links">
-    <a href="work.html">Work</a>
-    <a href="studio.html">Studio</a>
-    <a href="index.html#4">Contact</a>
-    <a href="index.html" class="nav-back"><span>←</span> Home</a>
-  </div>
+  <button class="menu-btn" id="menuBtn" aria-label="Open menu">
+    <span>Menu</span>
+    <span class="menu-bars"><i></i><i></i></span>
+  </button>
 </header>
+
+<!-- Menu overlay -->
+<div class="menu-overlay" id="menuOverlay" aria-hidden="true">
+  <nav class="menu-nav">
+    <a href="index.html#hero">Home</a>
+    <a href="index.html#disciplines">What</a>
+    <a href="index.html#work">Works</a>
+    <a href="studio.html">Studio</a>
+    <a href="index.html#process">How</a>
+    <a href="index.html#contact">Let's Build</a>
+    <a href="index.html#form">Contact Us</a>
+  </nav>
+  <div class="menu-foot">
+    <span>studio@monolith.creative</span>
+    <span>© 2026 Monolith Studio</span>
+  </div>
+</div>
 
 <main>
   <section class="subpage-hero">
-    <div class="hero-canvas"><canvas id="heroCanvas"></canvas></div>
     <p class="subpage-eyebrow sr">The Studio · est. 2017</p>
     <h1 class="subpage-title sr">A small crew<br/>with big<br/>telescopes.</h1>
     <p class="subpage-subtitle sr">Twelve people across London and Tokyo, obsessed with the space between disciplines. We treat every project like a mission — researched, rehearsed, and launched with intent.</p>
@@ -159,7 +174,7 @@
     <p class="section-eyebrow">Get in touch</p>
     <h2>Let's talk.</h2>
     <p>We're always open to conversation — whether you've got a project in mind or just want to say hello.</p>
-    <p style="margin-top: 1.5rem;"><a href="mailto:studio@monolith.creative" style="font-family: var(--font-display); font-weight: 700; font-size: 1.4rem; border-bottom: 1px solid var(--ink); padding-bottom: .2rem;">studio@monolith.creative →</a></p>
+    <p style="margin-top: 1.5rem;"><a href="index.html#form" style="font-family: var(--font-display); font-weight: 700; font-size: 1.4rem; border-bottom: 1px solid var(--ink); padding-bottom: .2rem;">studio@monolith.creative →</a></p>
   </section>
 </main>
 
@@ -168,13 +183,73 @@
   <span>London / Tokyo</span>
 </footer>
 
-<script src="project.js"></script>
+<button class="return-top" id="returnTop" aria-label="Return to top">↑</button>
+<script>
+// Menu toggle
+(function() {
+  var menuBtn = document.getElementById('menuBtn');
+  var menuOverlay = document.getElementById('menuOverlay');
+  var menuOpen = false;
+  function openMenu() { menuOpen = true; menuBtn.classList.add('open'); menuOverlay.classList.add('open'); menuOverlay.setAttribute('aria-hidden', 'false'); }
+  function closeMenu() { menuOpen = false; menuBtn.classList.remove('open'); menuOverlay.classList.remove('open'); menuOverlay.setAttribute('aria-hidden', 'true'); }
+  menuBtn.addEventListener('click', function() { menuOpen ? closeMenu() : openMenu(); });
+  menuOverlay.addEventListener('click', function(e) { if (e.target === menuOverlay) closeMenu(); });
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeMenu(); });
+})();
+// Return to top
+(function() {
+  var btn = document.getElementById('returnTop');
+  window.addEventListener('scroll', function() {
+    if (window.scrollY > 300) btn.classList.add('visible');
+    else btn.classList.remove('visible');
+  });
+  btn.addEventListener('click', function() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+})();
+</script>
+
+<script>
+// WebGPU detection — load module or fallback
+(function() {
+  var importMap = {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.webgpu.min.js",
+      "three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.webgpu.min.js",
+      "three/tsl": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.tsl.min.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.181.0/examples/jsm/"
+    }
+  };
+
+  if (navigator.gpu) {
+    // WebGPU available — use module + importmap
+    var im = document.createElement('script');
+    im.type = 'importmap';
+    im.textContent = JSON.stringify(importMap);
+    document.head.appendChild(im);
+
+    var mod = document.createElement('script');
+    mod.type = 'module';
+    mod.src = 'studio-particles.js?v=3';
+    document.body.appendChild(mod);
+  } else {
+    // WebGPU not available — use WebGL fallback with r128
+    var s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+    s.onload = function() {
+      var s2 = document.createElement('script');
+      s2.src = 'studio-fallback.js?v=1';
+      document.body.appendChild(s2);
+    };
+    document.body.appendChild(s);
+  }
+})();
+</script>
 <script>
 const io = new IntersectionObserver((entries) => {
   entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
 }, { threshold: 0.12 });
 document.querySelectorAll(".sr").forEach(el => io.observe(el));
-initHeroCanvas(document.getElementById("heroCanvas"));
 </script>
 </body>
 </html>
