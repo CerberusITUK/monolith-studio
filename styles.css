@@ -54,7 +54,7 @@ body, .nav, .menu-overlay, .footer, .subpage-hero, .work-grid,
   line-gap-override: 0%;
 }
 
-html, body { height: 100%; }
+html, body { height: 100%; max-width: 100vw; overflow-x: hidden; }
 
 body {
   background: var(--bg);
@@ -162,7 +162,7 @@ button { background: none; border: 0; color: inherit; font: inherit; cursor: poi
 @media (max-width: 720px) { .rail { display: none; } }
 
 /* ===== Deck / slides ===== */
-.deck { position: fixed; inset: 0; z-index: 10; }
+.deck { position: fixed; inset: 0; z-index: 10; height: 100dvh; }
 .slide {
   position: absolute; inset: 0;
   display: flex; align-items: flex-end;
@@ -275,6 +275,7 @@ button { background: none; border: 0; color: inherit; font: inherit; cursor: poi
   display: block;
   width: 70vw;
   height: 70vh;
+  max-width: 100vw;
   border-radius: 12px;
   overflow: hidden;
   border: 1px solid rgba(255,255,255,0.12);
@@ -587,6 +588,28 @@ button { background: none; border: 0; color: inherit; font: inherit; cursor: poi
 @media (max-width: 720px) {
   .footer { font-size: 0.65rem; padding: .8rem 1.25rem; }
   .scroll-hint { display: none; }
+  .nav { padding: 1rem 1.25rem; }
+  .project-preview { padding-top: 8dvh; }
+  .project-preview-link {
+    width: 92vw;
+    height: 65dvh;
+    max-width: 100vw;
+  }
+  .project-preview-iframe {
+    width: 200%;
+    height: 200%;
+  }
+  .slide {
+    padding: 0 1.25rem clamp(4rem, 10dvh, 6rem);
+  }
+  .subpage-hero { padding: 5rem 1.25rem 1.5rem; min-height: 50dvh; }
+  .project-hero { padding: 6rem 1.25rem 2rem; min-height: 60dvh; }
+  .project-section { padding: 3rem 1.25rem; }
+  .studio-section { padding: 4rem 1.25rem; }
+  .work-grid { padding: 2rem 1.25rem; }
+  .project-nav { padding: 3rem 1.25rem; }
+  .home-btn { top: 4.5rem; right: 1rem; }
+  .return-top { bottom: 4rem; right: 1rem; width: 3rem; height: 3rem; }
 }
 
 /* ========================================================
@@ -655,7 +678,7 @@ button { background: none; border: 0; color: inherit; font: inherit; cursor: poi
 }
 
 /* Subpage body — normal scroll */
-body.subpage { overflow: auto; }
+body.subpage { overflow: auto; overflow-x: hidden; max-width: 100vw; }
 body.subpage .subpage-bg {
   position: fixed; inset: 0; z-index: 0;
   background: radial-gradient(circle at 50% 30%, #0a0a14, #000);
@@ -734,7 +757,7 @@ body.subpage .footer {
 
 /* Subpage hero */
 .subpage-hero {
-  min-height: 60vh;
+  min-height: 60dvh;
   display: flex; flex-direction: column; justify-content: flex-end;
   padding: 5rem var(--pad) 1.5rem;
   position: relative;
@@ -833,12 +856,12 @@ body.subpage .footer {
   background-size: cover;
   background-position: top center;
 }
-.work-thumb[data-thumb="sun"]     { background-image: url('thumbs/lumen.png'); }
-.work-thumb[data-thumb="cloud"]   { background-image: url('thumbs/strata.png'); }
-.work-thumb[data-thumb="wave"]    { background-image: url('thumbs/wavelength.png'); }
-.work-thumb[data-thumb="paths"]   { background-image: url('thumbs/latitude.png'); }
-.work-thumb[data-thumb="threads"] { background-image: url('thumbs/threadwork.png'); }
-.work-thumb[data-thumb="pulse"]   { background-image: url('thumbs/pulse.png'); }
+.work-thumb[data-thumb="sun"]     { background-image: url('thumbs/lumen.webp'); }
+.work-thumb[data-thumb="cloud"]   { background-image: url('thumbs/strata.webp'); }
+.work-thumb[data-thumb="wave"]    { background-image: url('thumbs/wavelength.webp'); }
+.work-thumb[data-thumb="paths"]   { background-image: url('thumbs/latitude.webp'); }
+.work-thumb[data-thumb="threads"] { background-image: url('thumbs/threadwork.webp'); }
+.work-thumb[data-thumb="pulse"]   { background-image: url('thumbs/pulse.webp'); }
 .work-thumb-glyph { display: none; }
 .work-thumb .thumb-iframe {
   position: absolute; top: 0; left: 0;
@@ -958,13 +981,13 @@ body.subpage .footer {
 
 /* ===== Project detail page ===== */
 .project-hero {
-  min-height: 80vh;
+  min-height: 80dvh;
   display: flex; flex-direction: column; justify-content: flex-end;
   padding: 8rem var(--pad) 3rem;
   position: relative;
 }
 .project-canvas {
-  position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+  position: fixed; top: 0; left: 0; width: 100%; height: 100dvh;
   z-index: 2; pointer-events: none;
   will-change: transform;
   overflow: hidden;

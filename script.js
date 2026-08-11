@@ -639,9 +639,14 @@
 
   function onResize() {
     if (!renderer) return;
-    camera.aspect = innerWidth / innerHeight;
+    var w = window.visualViewport ? window.visualViewport.width : innerWidth;
+    var h = window.visualViewport ? window.visualViewport.height : innerHeight;
+    camera.aspect = w / h;
     camera.updateProjectionMatrix();
-    renderer.setSize(innerWidth, innerHeight);
+    renderer.setSize(w, h);
+  }
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", onResize);
   }
 
   let wallIntro = 0;  // 0=just arrived, lerps to 1 over time
