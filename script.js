@@ -13,7 +13,7 @@
   }
 
   /* ---------------- Three.js morphing particle scene ---------------- */
-  let scene, camera, renderer, points, wire, bokehPoints, bokehMat, pointsMat;
+  let scene, camera, renderer, points, bokehPoints, bokehMat, pointsMat;
   let targetSize = 0.04;
   const COUNT = isEmbed ? 10000 : 40000;
   const positions = new Float32Array(COUNT * 3);
@@ -550,16 +550,6 @@
       points = new THREE.Points(geo, pointsMat);
       scene.add(points);
 
-      // subtle wireframe for depth (skip in embed mode for performance)
-      if (!isEmbed) {
-        const wgeo = new THREE.IcosahedronGeometry(3.6, 1);
-        const wmat = new THREE.MeshBasicMaterial({
-          color: 0x4466ff, wireframe: true, transparent: true, opacity: 0.06,
-        });
-        wire = new THREE.Mesh(wgeo, wmat);
-        scene.add(wire);
-      }
-
       // ---- Bokeh: floating out-of-focus light circles ----
       var bokehCount = isEmbed ? 30 : 60;
       var bokehGeo = new THREE.BufferGeometry();
@@ -902,22 +892,14 @@
       }
       // smoothly lerp particle size
       pointsMat.size += (targetSize - pointsMat.size) * 0.05;
-      if (wire) {
-        wire.rotation.y = -clock * 0.5 + rotY;
-        wire.rotation.x = clock * 0.25 + rotX;
-      }
       // Update bokeh
       if (bokehMat) bokehMat.uniforms.uTime.value = clock;
     }
 
-    // Zoom particles/wire/bokeh out when on preview slide (eased, always runs)
+    // Zoom particles/bokeh out when on preview slide (eased, always runs)
     if (points) {
       points.position.z += (-100 * previewZoom - points.position.z) * 0.04;
       points.visible = previewZoom < 0.95;
-    }
-    if (wire) {
-      wire.position.z += (-100 * previewZoom - wire.position.z) * 0.04;
-      wire.visible = previewZoom < 0.95;
     }
     if (bokehPoints) {
       bokehPoints.position.z += (-100 * previewZoom - bokehPoints.position.z) * 0.04;
@@ -928,7 +910,6 @@
     if (renderer) {
       // Fade particles opacity on preview (eased with previewZoom)
       if (pointsMat) pointsMat.opacity = 1.0 - previewZoom;
-      if (wire) wire.material.opacity = 0.06 - previewZoom * 0.06;
 
       currentBg[0] += (targetBg[0] - currentBg[0]) * 0.03;
       currentBg[1] += (targetBg[1] - currentBg[1]) * 0.03;
