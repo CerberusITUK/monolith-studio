@@ -960,12 +960,16 @@
   function loadPreviewIframe(slide) {
     var iframe = slide.querySelector(".project-preview-iframe");
     if (iframe && iframe.dataset.src && iframe.src.indexOf(iframe.dataset.src) === -1) {
+      iframe.addEventListener("load", function() {
+        slide.classList.add("loaded");
+      });
       iframe.src = iframe.dataset.src;
     }
   }
   function unloadPreviewIframe(slide) {
     var iframe = slide.querySelector(".project-preview-iframe");
     if (iframe) { iframe.src = ""; }
+    slide.classList.remove("loaded");
   }
 
   // Preload project preview iframes in the background after page load
@@ -980,6 +984,9 @@
       var slide = previewSlides[idx++];
       var iframe = slide.querySelector(".project-preview-iframe");
       if (iframe && iframe.dataset.src && iframe.src.indexOf(iframe.dataset.src) === -1) {
+        iframe.addEventListener("load", function() {
+          slide.classList.add("loaded");
+        });
         iframe.src = iframe.dataset.src;
       }
       setTimeout(preloadNext, 2000); // stagger each iframe load by 2s

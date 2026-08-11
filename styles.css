@@ -324,6 +324,18 @@ button { background: none; border: 0; color: inherit; font: inherit; cursor: poi
   transform-origin: top left;
   z-index: 2;
 }
+.project-preview-placeholder {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background-size: cover;
+  background-position: center;
+  z-index: 1;
+  transition: opacity 0.6s ease;
+}
+.project-preview.loaded .project-preview-placeholder {
+  opacity: 0;
+}
 .project-preview-overlay {
   position: absolute;
   top: 0; left: 0;
