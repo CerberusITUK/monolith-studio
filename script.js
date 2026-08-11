@@ -927,8 +927,8 @@
     // Always update background color + render, even on preview slides
     if (renderer) {
       // Fade particles opacity on preview (eased with previewZoom)
-      if (pointsMat) pointsMat.opacity = 1.0 - previewZoom * 0.85;
-      if (wire) wire.material.opacity = 0.06 - previewZoom * 0.04;
+      if (pointsMat) pointsMat.opacity = 1.0 - previewZoom;
+      if (wire) wire.material.opacity = 0.06 - previewZoom * 0.06;
 
       currentBg[0] += (targetBg[0] - currentBg[0]) * 0.03;
       currentBg[1] += (targetBg[1] - currentBg[1]) * 0.03;
