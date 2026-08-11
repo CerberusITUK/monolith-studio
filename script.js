@@ -968,6 +968,32 @@
     if (iframe) { iframe.src = ""; }
   }
 
+  // Preload project preview iframes in the background after page load
+  // Uses requestIdleCallback so it never blocks the main thread
+  (function preloadPreviewIframes() {
+    var previewSlides = slides.filter(function(s) {
+      return s.classList.contains("project-preview");
+    });
+    var idx = 0;
+    function preloadNext() {
+      if (idx >= previewSlides.length) return;
+      var slide = previewSlides[idx++];
+      var iframe = slide.querySelector(".project-preview-iframe");
+      if (iframe && iframe.dataset.src && iframe.src.indexOf(iframe.dataset.src) === -1) {
+        iframe.src = iframe.dataset.src;
+      }
+      setTimeout(preloadNext, 2000); // stagger each iframe load by 2s
+    }
+    // Start preloading after initial render + 3s delay
+    setTimeout(function() {
+      if (window.requestIdleCallback) {
+        requestIdleCallback(preloadNext);
+      } else {
+        preloadNext();
+      }
+    }, 3000);
+  })();
+
   function goTo(index) {
     index = Math.max(0, Math.min(N - 1, index));
     if (index === current || locked) return;
