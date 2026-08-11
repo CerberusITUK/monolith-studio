@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<title>Privacy — MONOLITH</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=114" />
+</head>
+<body class="subpage">
+
+<div class="subpage-bg"></div>
+<div class="grain" aria-hidden="true"></div>
+
+<header class="nav">
+  <a href="index.html" class="logo">
+    <span class="logo-mark">◆</span>
+    <span>MONOLITH</span>
+  </a>
+  <button class="menu-btn" id="menuBtn" aria-label="Open menu">
+    <span>Menu</span>
+    <span class="menu-bars"><i></i><i></i></span>
+  </button>
+</header>
+
+<div class="menu-overlay" id="menuOverlay" aria-hidden="true">
+  <nav class="menu-nav">
+    <a href="index.html#hero">Home</a>
+    <a href="index.html#disciplines">What</a>
+    <a href="index.html#work">Works</a>
+    <a href="studio.html">Studio</a>
+    <a href="index.html#process">How</a>
+    <a href="index.html#contact">Let's Build</a>
+    <a href="index.html#form">Contact Us</a>
+  </nav>
+  <div class="menu-foot">
+    <span>studio@monolith.creative</span>
+    <span>© 2026 Monolith Studio</span>
+  </div>
+</div>
+
+<main>
+  <section class="subpage-hero">
+    <p class="subpage-eyebrow sr">Legal · 01</p>
+    <h1 class="subpage-title sr">Privacy<br/>Policy</h1>
+    <p class="subpage-subtitle sr">How we handle and protect your personal data.</p>
+  </section>
+
+  <section class="studio-section">
+    <p class="section-eyebrow sr">Last updated: August 2026</p>
+    <h2 class="sr">Overview</h2>
+    <p class="sr">Monolith Studio ("we", "us", "our") is committed to protecting your privacy. This policy explains what data we collect, why we collect it, and how we keep it safe.</p>
+
+    <h2 class="sr">Data We Collect</h2>
+    <p class="sr">We may collect the following types of personal data:</p>
+    <p class="sr">— <strong>Contact information:</strong> Name and email address when you submit our contact form.</p>
+    <p class="sr">— <strong>Usage data:</strong> Anonymous analytics about how you interact with our website, including page views and session duration.</p>
+    <p class="sr">— <strong>Technical data:</strong> IP address, browser type, and device information collected automatically when you visit our site.</p>
+
+    <h2 class="sr">How We Use Your Data</h2>
+    <p class="sr">We use your data to:</p>
+    <p class="sr">— Respond to enquiries and project requests submitted via our contact form.</p>
+    <p class="sr">— Improve our website performance and user experience through anonymous analytics.</p>
+    <p class="sr">— Comply with legal obligations where applicable.</p>
+    <p class="sr">We do not sell, rent, or share your personal data with third parties for marketing purposes.</p>
+
+    <h2 class="sr">Data Storage & Security</h2>
+    <p class="sr">Your data is stored securely and access is restricted to authorised personnel only. We retain personal data for as long as necessary to fulfil the purposes outlined above or as required by law.</p>
+
+    <h2 class="sr">Your Rights</h2>
+    <p class="sr">Under the GDPR and UK Data Protection Act 2018, you have the right to:</p>
+    <p class="sr">— Access the personal data we hold about you.</p>
+    <p class="sr">— Request correction or deletion of your data.</p>
+    <p class="sr">— Object to or restrict certain processing of your data.</p>
+    <p class="sr">— Withdraw consent at any time.</p>
+    <p class="sr">To exercise these rights, contact us at studio@monolith.creative.</p>
+
+    <h2 class="sr">Third-Party Services</h2>
+    <p class="sr">Our website may use third-party services (e.g. analytics, fonts) that collect anonymous data. These services have their own privacy policies governing how they use that data.</p>
+
+    <h2 class="sr">Contact</h2>
+    <p class="sr">If you have questions about this policy or how we handle your data, email us at studio@monolith.creative.</p>
+  </section>
+</main>
+
+<footer class="footer">
+  <span>© 2026 Monolith Studio</span>
+  <span class="footer-legal">
+    <a href="privacy.html">Privacy</a>
+    <a href="cookies.html">Cookies</a>
+    <a href="accessibility.html">Accessibility</a>
+    <a href="terms.html">T&amp;Cs</a>
+  </span>
+</footer>
+
+<button class="return-top" id="returnTop" aria-label="Return to top">↑</button>
+<script>
+(function() {
+  var btn = document.getElementById('returnTop');
+  window.addEventListener('scroll', function() {
+    if (window.scrollY > 400) btn.classList.add('visible');
+    else btn.classList.remove('visible');
+  });
+  btn.addEventListener('click', function() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+})();
+</script>
+<script>
+var menuBtn = document.getElementById('menuBtn');
+var menuOverlay = document.getElementById('menuOverlay');
+menuBtn.addEventListener('click', function() {
+  menuBtn.classList.toggle('open');
+  menuOverlay.classList.toggle('open');
+  menuOverlay.setAttribute('aria-hidden', !menuOverlay.classList.contains('open'));
+});
+</script>
+<script>
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
+}, { threshold: 0.12 });
+document.querySelectorAll(".sr").forEach(el => io.observe(el));
+</script>
+</body>
+</html>

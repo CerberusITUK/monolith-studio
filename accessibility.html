@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<title>Accessibility — MONOLITH</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=114" />
+</head>
+<body class="subpage">
+
+<div class="subpage-bg"></div>
+<div class="grain" aria-hidden="true"></div>
+
+<header class="nav">
+  <a href="index.html" class="logo">
+    <span class="logo-mark">◆</span>
+    <span>MONOLITH</span>
+  </a>
+  <button class="menu-btn" id="menuBtn" aria-label="Open menu">
+    <span>Menu</span>
+    <span class="menu-bars"><i></i><i></i></span>
+  </button>
+</header>
+
+<div class="menu-overlay" id="menuOverlay" aria-hidden="true">
+  <nav class="menu-nav">
+    <a href="index.html#hero">Home</a>
+    <a href="index.html#disciplines">What</a>
+    <a href="index.html#work">Works</a>
+    <a href="studio.html">Studio</a>
+    <a href="index.html#process">How</a>
+    <a href="index.html#contact">Let's Build</a>
+    <a href="index.html#form">Contact Us</a>
+  </nav>
+  <div class="menu-foot">
+    <span>studio@monolith.creative</span>
+    <span>© 2026 Monolith Studio</span>
+  </div>
+</div>
+
+<main>
+  <section class="subpage-hero">
+    <p class="subpage-eyebrow sr">Legal · 03</p>
+    <h1 class="subpage-title sr">Accessibility<br/>Statement</h1>
+    <p class="subpage-subtitle sr">Our commitment to making our website usable for everyone.</p>
+  </section>
+
+  <section class="studio-section">
+    <p class="section-eyebrow sr">Last updated: August 2026</p>
+
+    <h2 class="sr">Our Commitment</h2>
+    <p class="sr">Monolith Studio is committed to ensuring digital accessibility for all users, including those with disabilities. We aim to conform to the Web Content Accessibility Guidelines (WCAG) 2.1 at level AA where possible.</p>
+
+    <h2 class="sr">Measures We Take</h2>
+    <p class="sr">To improve accessibility, we:</p>
+    <p class="sr">— Use semantic HTML and proper heading structures throughout the site.</p>
+    <p class="sr">— Provide text alternatives and aria labels for interactive elements.</p>
+    <p class="sr">— Ensure sufficient colour contrast between text and background.</p>
+    <p class="sr">— Support keyboard navigation for all interactive components.</p>
+    <p class="sr">— Respect <code>prefers-reduced-motion</code> to minimise animations for users who prefer reduced motion.</p>
+    <p class="sr">— Design responsive layouts that adapt to different screen sizes and devices.</p>
+
+    <h2 class="sr">Known Limitations</h2>
+    <p class="sr">Our website features a 3D particle animation powered by Three.js. While we provide fallbacks and reduced-motion support, some interactive 3D content may not be fully accessible to all users. If you experience difficulty, please contact us.</p>
+
+    <h2 class="sr">Compatibility</h2>
+    <p class="sr">The website is designed to work with modern browsers including Chrome, Firefox, Safari, and Edge on desktop and mobile devices.</p>
+
+    <h2 class="sr">Feedback</h2>
+    <p class="sr">If you encounter an accessibility issue or have suggestions for improvement, please email us at studio@monolith.creative. We take all feedback seriously and will make reasonable efforts to address issues promptly.</p>
+  </section>
+</main>
+
+<footer class="footer">
+  <span>© 2026 Monolith Studio</span>
+  <span class="footer-legal">
+    <a href="privacy.html">Privacy</a>
+    <a href="cookies.html">Cookies</a>
+    <a href="accessibility.html">Accessibility</a>
+    <a href="terms.html">T&amp;Cs</a>
+  </span>
+</footer>
+
+<button class="return-top" id="returnTop" aria-label="Return to top">↑</button>
+<script>
+(function() {
+  var btn = document.getElementById('returnTop');
+  window.addEventListener('scroll', function() {
+    if (window.scrollY > 400) btn.classList.add('visible');
+    else btn.classList.remove('visible');
+  });
+  btn.addEventListener('click', function() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+})();
+</script>
+<script>
+var menuBtn = document.getElementById('menuBtn');
+var menuOverlay = document.getElementById('menuOverlay');
+menuBtn.addEventListener('click', function() {
+  menuBtn.classList.toggle('open');
+  menuOverlay.classList.toggle('open');
+  menuOverlay.setAttribute('aria-hidden', !menuOverlay.classList.contains('open'));
+});
+</script>
+<script>
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
+}, { threshold: 0.12 });
+document.querySelectorAll(".sr").forEach(el => io.observe(el));
+</script>
+</body>
+</html>

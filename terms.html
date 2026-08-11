@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<title>Terms &amp; Conditions — MONOLITH</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=114" />
+</head>
+<body class="subpage">
+
+<div class="subpage-bg"></div>
+<div class="grain" aria-hidden="true"></div>
+
+<header class="nav">
+  <a href="index.html" class="logo">
+    <span class="logo-mark">◆</span>
+    <span>MONOLITH</span>
+  </a>
+  <button class="menu-btn" id="menuBtn" aria-label="Open menu">
+    <span>Menu</span>
+    <span class="menu-bars"><i></i><i></i></span>
+  </button>
+</header>
+
+<div class="menu-overlay" id="menuOverlay" aria-hidden="true">
+  <nav class="menu-nav">
+    <a href="index.html#hero">Home</a>
+    <a href="index.html#disciplines">What</a>
+    <a href="index.html#work">Works</a>
+    <a href="studio.html">Studio</a>
+    <a href="index.html#process">How</a>
+    <a href="index.html#contact">Let's Build</a>
+    <a href="index.html#form">Contact Us</a>
+  </nav>
+  <div class="menu-foot">
+    <span>studio@monolith.creative</span>
+    <span>© 2026 Monolith Studio</span>
+  </div>
+</div>
+
+<main>
+  <section class="subpage-hero">
+    <p class="subpage-eyebrow sr">Legal · 04</p>
+    <h1 class="subpage-title sr">Terms &amp;<br/>Conditions</h1>
+    <p class="subpage-subtitle sr">The terms governing use of our website and services.</p>
+  </section>
+
+  <section class="studio-section">
+    <p class="section-eyebrow sr">Last updated: August 2026</p>
+
+    <h2 class="sr">Acceptance of Terms</h2>
+    <p class="sr">By accessing and using this website, you accept and agree to be bound by these Terms &amp; Conditions. If you do not agree, please do not use the site.</p>
+
+    <h2 class="sr">Use of the Website</h2>
+    <p class="sr">You agree to use this website for lawful purposes only. You must not:</p>
+    <p class="sr">— Use the site in any way that breaches applicable laws or regulations.</p>
+    <p class="sr">— Attempt to gain unauthorised access to any part of the site or its systems.</p>
+    <p class="sr">— Introduce viruses, malware, or other harmful code.</p>
+    <p class="sr">— Scrape, copy, or republish content without prior written consent.</p>
+
+    <h2 class="sr">Intellectual Property</h2>
+    <p class="sr">All content on this website — including text, graphics, logos, 3D animations, and code — is the property of Monolith Studio unless otherwise stated. You may not reproduce, distribute, or exploit any content without our written permission.</p>
+
+    <h2 class="sr">Services</h2>
+    <p class="sr">Any services provided by Monolith Studio are subject to separate agreements. These terms govern use of this website only.</p>
+
+    <h2 class="sr">Third-Party Links</h2>
+    <p class="sr">Our website may contain links to third-party websites. We are not responsible for the content or practices of those sites.</p>
+
+    <h2 class="sr">Disclaimer</h2>
+    <p class="sr">This website is provided "as is" without warranties of any kind. We do not guarantee uninterrupted or error-free access. Use of the site is at your own risk.</p>
+
+    <h2 class="sr">Limitation of Liability</h2>
+    <p class="sr">Monolith Studio shall not be liable for any indirect, incidental, or consequential damages arising from your use of this website.</p>
+
+    <h2 class="sr">Changes to These Terms</h2>
+    <p class="sr">We may update these terms from time to time. Continued use of the website after changes constitutes acceptance of the revised terms.</p>
+
+    <h2 class="sr">Contact</h2>
+    <p class="sr">For questions about these Terms &amp; Conditions, contact us at studio@monolith.creative.</p>
+  </section>
+</main>
+
+<footer class="footer">
+  <span>© 2026 Monolith Studio</span>
+  <span class="footer-legal">
+    <a href="privacy.html">Privacy</a>
+    <a href="cookies.html">Cookies</a>
+    <a href="accessibility.html">Accessibility</a>
+    <a href="terms.html">T&amp;Cs</a>
+  </span>
+</footer>
+
+<button class="return-top" id="returnTop" aria-label="Return to top">↑</button>
+<script>
+(function() {
+  var btn = document.getElementById('returnTop');
+  window.addEventListener('scroll', function() {
+    if (window.scrollY > 400) btn.classList.add('visible');
+    else btn.classList.remove('visible');
+  });
+  btn.addEventListener('click', function() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+})();
+</script>
+<script>
+var menuBtn = document.getElementById('menuBtn');
+var menuOverlay = document.getElementById('menuOverlay');
+menuBtn.addEventListener('click', function() {
+  menuBtn.classList.toggle('open');
+  menuOverlay.classList.toggle('open');
+  menuOverlay.setAttribute('aria-hidden', !menuOverlay.classList.contains('open'));
+});
+</script>
+<script>
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
+}, { threshold: 0.12 });
+document.querySelectorAll(".sr").forEach(el => io.observe(el));
+</script>
+</body>
+</html>

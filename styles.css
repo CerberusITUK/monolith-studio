@@ -585,8 +585,22 @@ button { background: none; border: 0; color: inherit; font: inherit; cursor: poi
   pointer-events: none;
 }
 .footer span:first-child { padding-left: 0; }
+.footer-legal {
+  display: flex;
+  gap: 1.2rem;
+  pointer-events: auto;
+}
+.footer-legal a {
+  color: var(--ink-faint);
+  text-decoration: none;
+  transition: color .3s var(--ease);
+}
+.footer-legal a:hover {
+  color: var(--ink);
+}
 @media (max-width: 720px) {
-  .footer { font-size: 0.65rem; padding: .8rem 1.25rem; }
+  .footer { font-size: 0.65rem; padding: .8rem 1.25rem; flex-wrap: wrap; gap: .5rem; }
+  .footer-legal { gap: .8rem; }
   .scroll-hint { display: none; }
   .nav { padding: 1rem 1.25rem; }
   .project-preview { padding-top: 8dvh; }
