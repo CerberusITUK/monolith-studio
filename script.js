@@ -920,7 +920,7 @@
     // Always update background color + render, even on preview slides
     if (renderer) {
       // Fade particles opacity on preview (eased with previewZoom)
-      if (pointsMat) pointsMat.opacity = 1.0 - previewZoom;
+      if (pointsMat) pointsMat.opacity = previewZoom < 0.7 ? 1.0 : Math.max(0, 1.0 - (previewZoom - 0.7) / 0.3);
 
       currentBg[0] += (targetBg[0] - currentBg[0]) * 0.03;
       currentBg[1] += (targetBg[1] - currentBg[1]) * 0.03;
