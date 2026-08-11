@@ -699,6 +699,17 @@
     var isPreview = slides[current] && slides[current].classList.contains("project-preview");
     // Ease previewZoom toward 1 (zoomed out) or 0 (normal) for smooth transition
     previewZoom += ((isPreview ? 1 : 0) - previewZoom) * 0.04;
+    // Reveal project preview card/iframe only after particles have zoomed out
+    if (pendingPreview === current && isPreview && previewZoom > 0.85) {
+      var pSlide = slides[pendingPreview];
+      pSlide.classList.add("active");
+      loadPreviewIframe(pSlide);
+      setTimeout(function() {
+        pSlide.classList.remove("enter-from-left", "enter-from-right");
+      }, 1300);
+      setTimeout(() => { locked = false; }, 1350);
+      pendingPreview = null;
+    }
     if (points && previewZoom < 0.98) {
       const tgt = targets[currentShape];
       const tgtCol = tgt.col;
@@ -934,6 +945,7 @@
   const N = slides.length;
   let current = 0;
   let locked = false;
+  let pendingPreview = null; // delay project preview reveal until particles zoom out
   const railFill = document.getElementById("railFill");
   const railDots = document.getElementById("railDots");
   const scrollHint = document.getElementById("scrollHint");
@@ -984,11 +996,7 @@
       slides[index].classList.remove("exit-left", "exit-right");
       var enterClass = goingDown ? "enter-from-right" : "enter-from-left";
       slides[index].classList.add(enterClass);
-      loadPreviewIframe(slides[index]);
-      requestAnimationFrame(function() {
-        slides[index].classList.add("active");
-        setTimeout(function() { slides[index].classList.remove(enterClass); }, 1300);
-      });
+      pendingPreview = index; // reveal after particles zoom out
     } else {
       slides[index].classList.add("active");
     }
@@ -1028,7 +1036,10 @@
       if (index > 0) returnTopBtn.classList.add("visible");
       else returnTopBtn.classList.remove("visible");
     }
-    setTimeout(() => { locked = false; }, 950);
+    // For non-preview slides, unlock after transition; previews unlock after delayed reveal in animate()
+    if (!slides[index].classList.contains("project-preview")) {
+      setTimeout(() => { locked = false; }, 950);
+    }
   }
 
   let wheelAccum = 0;
