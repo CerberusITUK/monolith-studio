@@ -66,7 +66,7 @@
       globeGroup.add(globe);
 
       // ---- Cloud layer ----
-      var cloudMap = textureLoader.load("earth_clouds.jpg");
+      var cloudMap = textureLoader.load("earth_clouds.png");
       var cloudGeo = new THREE.SphereGeometry(globeRadius * 1.015, 64, 48);
       var cloudMat = new THREE.MeshBasicMaterial({
         map: cloudMap,
